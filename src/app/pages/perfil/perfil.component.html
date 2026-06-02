@@ -1,0 +1,72 @@
+<div class="crud-page profile-page">
+  <div class="crud-header">
+    <div>
+      <h2>Mi Perfil</h2>
+      <p>Informacion de cuenta y seguridad</p>
+    </div>
+  </div>
+
+  <div class="profile-grid" *ngIf="user">
+    <mat-card class="profile-card">
+      <mat-card-content>
+        <div class="profile-avatar">{{ initial }}</div>
+        <h3>{{ user.nombre }}</h3>
+        <p>{{ user.username }}</p>
+        <div class="profile-meta">
+          <span class="badge badge-blue">{{ user.rol | titlecase }}</span>
+          <span class="badge" [class.badge-green]="user.activo" [class.badge-red]="!user.activo">
+            {{ user.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="profile-card">
+      <mat-card-header>
+        <mat-card-title>Cambiar Contrasena</mat-card-title>
+        <mat-card-subtitle>Usa una clave de al menos 9 caracteres.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="full-col">
+            <mat-label>Contraseña actual</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="currentPassword" name="currentPassword" autocomplete="current-password">
+            <mat-error *ngIf="currentPasswordTouched && containsEmojiOrControl(currentPassword)">
+              La contraseña contiene caracteres no válidos.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nueva contrasena</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="password" (ngModelChange)="passwordTouched = true">
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="passwordTouched && password.length < 9">
+              La contraseña debe tener al menos 9 caracteres.
+            </mat-error>
+            <mat-error *ngIf="passwordTouched && containsEmojiOrControl(password)">
+              La contraseña contiene caracteres no válidos (emojis/control no permitidos).
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Confirmar contrasena</mat-label>
+            <mat-icon matPrefix>lock_reset</mat-icon>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="confirmPassword" (ngModelChange)="confirmPasswordTouched = true">
+            <mat-error *ngIf="confirmPasswordTouched && password !== confirmPassword">
+              Las contraseñas no coinciden.
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary" (click)="cambiarPassword()">
+          <mat-icon>save</mat-icon> Actualizar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

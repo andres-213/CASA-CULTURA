@@ -1,0 +1,116 @@
+﻿<ng-container *ngIf="isLoginPage; else appLayout">
+  <router-outlet></router-outlet>
+</ng-container>
+
+<ng-template #appLayout>
+  <ng-container *ngIf="isLoggedIn; else loginFallback">
+    <mat-sidenav-container class="app-container">
+      <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile" class="app-sidenav">
+        <div class="sidenav-brand">
+          <div class="brand-logo"><mat-icon>museum</mat-icon></div>
+          <div class="brand-text">
+            <span class="brand-name">Casa Cultura</span>
+            <span class="brand-sub">Panel Municipal</span>
+          </div>
+        </div>
+
+        <nav class="sidenav-nav">
+          <div class="nav-section">
+            <span class="nav-label">Principal</span>
+            <a mat-button routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+              <mat-icon>dashboard</mat-icon><span>Dashboard</span>
+            </a>
+          </div>
+          <div class="nav-section">
+            <span class="nav-label">Gestión</span>
+            <a mat-button routerLink="/participantes" routerLinkActive="active" class="nav-item">
+              <mat-icon>people</mat-icon><span>Participantes</span>
+            </a>
+            <a mat-button routerLink="/instructores" routerLinkActive="active" class="nav-item">
+              <mat-icon>school</mat-icon><span>Instructores</span>
+            </a>
+            <a mat-button routerLink="/usuarios" routerLinkActive="active" class="nav-item" *ngIf="isAdmin">
+              <mat-icon>manage_accounts</mat-icon><span>Usuarios</span>
+            </a>
+          </div>
+          <div class="nav-section">
+            <span class="nav-label">Programación</span>
+            <a mat-button routerLink="/disciplinas" routerLinkActive="active" class="nav-item">
+              <mat-icon>palette</mat-icon><span>Disciplinas</span>
+            </a>
+            <a mat-button routerLink="/talleres" routerLinkActive="active" class="nav-item">
+              <mat-icon>event</mat-icon><span>Talleres</span>
+            </a>
+            <a mat-button routerLink="/salones" routerLinkActive="active" class="nav-item">
+              <mat-icon>meeting_room</mat-icon><span>Salones</span>
+            </a>
+          </div>
+          <div class="nav-section">
+            <span class="nav-label">Operaciones</span>
+            <a mat-button routerLink="/inscripciones" routerLinkActive="active" class="nav-item">
+              <mat-icon>how_to_reg</mat-icon><span>Inscripciones</span>
+            </a>
+            <a mat-button routerLink="/asistencia" routerLinkActive="active" class="nav-item">
+              <mat-icon>fact_check</mat-icon><span>Asistencia</span>
+            </a>
+            <a mat-button routerLink="/materiales" routerLinkActive="active" class="nav-item">
+              <mat-icon>inventory_2</mat-icon><span>Materiales</span>
+            </a>
+          </div>
+          <div class="nav-section">
+            <span class="nav-label">Análisis</span>
+            <a mat-button routerLink="/reportes" routerLinkActive="active" class="nav-item">
+              <mat-icon>bar_chart</mat-icon><span>Reportes</span>
+            </a>
+          </div>
+          <div class="nav-section">
+            <span class="nav-label">Cuenta</span>
+            <a mat-button routerLink="/perfil" routerLinkActive="active" class="nav-item">
+              <mat-icon>person</mat-icon><span>Mi Perfil</span>
+            </a>
+          </div>
+        </nav>
+
+        <div class="sidenav-footer">
+          <div class="user-info">
+            <div class="user-avatar">{{ userInitial }}</div>
+            <div class="user-data">
+              <span class="user-name">{{ userName }}</span>
+              <span class="user-role">{{ userRole }}</span>
+            </div>
+          </div>
+          <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión" class="logout-btn">
+            <mat-icon>logout</mat-icon>
+          </button>
+        </div>
+      </mat-sidenav>
+
+      <mat-sidenav-content class="app-content">
+        <div class="topbar">
+          <button mat-icon-button (click)="sidenav.toggle()" class="menu-btn">
+            <mat-icon>menu</mat-icon>
+          </button>
+          <div class="topbar-heading">
+            <span class="topbar-kicker">Casa de la Cultura</span>
+            <span class="topbar-title">{{ currentPageTitle }}</span>
+          </div>
+          <span class="flex-spacer"></span>
+          <button mat-icon-button [matTooltip]="isDarkMode ? 'Modo claro' : 'Modo oscuro'" (click)="toggleTheme()">
+            <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Cerrar sesión" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+          </button>
+        </div>
+        <div class="content-area">
+          <router-outlet></router-outlet>
+        </div>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  </ng-container>
+
+  <ng-template #loginFallback>
+    <router-outlet></router-outlet>
+  </ng-template>
+</ng-template>
+

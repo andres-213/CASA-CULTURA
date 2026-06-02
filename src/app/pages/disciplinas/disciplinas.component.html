@@ -1,0 +1,95 @@
+<div class="crud-page">
+  <div class="crud-header">
+    <div><h2>Disciplinas Artísticas</h2><p>Gestión de las disciplinas ofrecidas por la Casa de la Cultura</p></div>
+    <button mat-raised-button color="primary" (click)="nuevo()"><mat-icon>add</mat-icon> Nueva Disciplina</button>
+  </div>
+  <div class="alert-success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
+  <div class="alert-error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
+
+  <div class="crud-layout">
+    <mat-card class="table-card">
+      <mat-card-content>
+        <div class="disc-cards">
+          <div class="disc-card" *ngFor="let d of disciplinas" [class.disc-selected]="selected?.id === d.id" (click)="select(d)">
+            <div class="disc-dot" [style.background]="d.color"></div>
+            <div class="disc-body">
+              <div class="disc-card-name">{{ d.nombre }}</div>
+              <div class="disc-card-desc">{{ d.descripcion }}</div>
+            </div>
+            <div class="disc-card-actions">
+              <button mat-icon-button color="primary" (click)="select(d); $event.stopPropagation()"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button color="warn" (click)="confirmarEliminar(d.id); $event.stopPropagation()"><mat-icon>delete</mat-icon></button>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="form-card" *ngIf="isNew || selected">
+      <mat-card-header>
+        <mat-card-title>{{ isNew ? 'Nueva Disciplina' : 'Editar Disciplina' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form #disciplinaForm="ngForm" class="form-grid" novalidate>
+          <mat-form-field appearance="outline" class="full-col">
+            <mat-label>Nombre *</mat-label>
+            <input matInput [(ngModel)]="form.nombre" name="nombre" required minlength="3" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$">
+            <mat-error *ngIf="disciplinaForm.submitted || disciplinaForm.form.get('nombre')?.touched">
+              <span *ngIf="disciplinaForm.form.get('nombre')?.hasError('required')">El nombre es obligatorio.</span>
+              <span *ngIf="disciplinaForm.form.get('nombre')?.hasError('minlength')">El nombre debe tener al menos 3 caracteres.</span>
+              <span *ngIf="disciplinaForm.form.get('nombre')?.hasError('pattern')">Solo se permiten letras y espacios.</span>
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-col">
+            <mat-label>Descripción</mat-label>
+            <textarea matInput [(ngModel)]="form.descripcion" name="descripcion" rows="3"></textarea>
+          </mat-form-field>
+          <div class="full-col">
+            <label class="field-label">Color Identificador</label>
+            <div class="color-picker">
+              <div class="color-swatch" *ngFor="let c of colores"
+                [style.background]="c"
+                [class.color-selected]="form.color === c"
+                (click)="form.color = c"></div>
+            </div>
+          </div>
+          <div class="full-col">
+            <label class="field-label">Ícono</label>
+            <mat-form-field appearance="outline">
+              <mat-label>Ícono Material</mat-label>
+              <mat-select [(ngModel)]="form.icono" name="icono">
+                <mat-option *ngFor="let ico of iconos" [value]="ico">
+                  <mat-icon>{{ ico }}</mat-icon> {{ ico }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="full-col preview-disc">
+            <div class="disc-preview" [style.background]="form.color + '22'" [style.border-color]="form.color">
+              <mat-icon [style.color]="form.color">{{ form.icono }}</mat-icon>
+              <span [style.color]="form.color">{{ form.nombre || 'Vista Previa' }}</span>
+            </div>
+          </div>
+        </form>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button (click)="cancelar()">Cancelar</button>
+        <button mat-raised-button color="primary" (click)="guardar()" [disabled]="disciplinaForm.invalid">
+          <mat-icon>save</mat-icon> {{ isNew ? 'Guardar' : 'Actualizar' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+
+<div class="overlay" *ngIf="showConfirmDelete">
+  <div class="confirm-dialog">
+    <div class="confirm-icon"><mat-icon>warning</mat-icon></div>
+    <h3>¿Eliminar Disciplina?</h3>
+    <p>Esta acción puede afectar los talleres e instructores asociados.</p>
+    <div class="confirm-actions">
+      <button mat-button (click)="showConfirmDelete = false">Cancelar</button>
+      <button mat-raised-button color="warn" (click)="eliminar()"><mat-icon>delete</mat-icon> Eliminar</button>
+    </div>
+  </div>
+</div>

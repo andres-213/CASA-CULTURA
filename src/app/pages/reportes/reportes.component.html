@@ -1,0 +1,243 @@
+<div class="crud-page">
+  <div class="crud-header">
+    <div>
+      <h2>Reportes Municipales</h2>
+      <p>Reportes de cobertura y estadísticas para el informe municipal</p>
+    </div>
+    <div class="report-actions">
+      <button mat-stroked-button color="primary" (click)="exportarCsv()">
+        <mat-icon>download</mat-icon> Exportar CSV
+      </button>
+      <button mat-stroked-button color="primary" (click)="imprimirReporte()">
+        <mat-icon>print</mat-icon> Imprimir Reporte
+      </button>
+    </div>
+  </div>
+
+  <!-- Resumen ejecutivo -->
+  <div class="summary-strip">
+    <div class="summary-item">
+      <span class="sum-value">{{ reporteDisciplinas.length }}</span>
+      <span class="sum-label">Disciplinas</span>
+    </div>
+    <div class="sum-divider"></div>
+    <div class="summary-item">
+      <span class="sum-value">{{ reporteTalleres.length }}</span>
+      <span class="sum-label">Talleres Activos</span>
+    </div>
+    <div class="sum-divider"></div>
+    <div class="summary-item">
+      <span class="sum-value">{{ getTotalInscritos() }}</span>
+      <span class="sum-label">Inscripciones Totales</span>
+    </div>
+    <div class="sum-divider"></div>
+    <div class="summary-item">
+      <span class="sum-value">{{ joinCompleto.length }}</span>
+      <span class="sum-label">Registros en Sistema</span>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="mat-elevation-z0">
+    <!-- Tab 1: Reporte por Disciplina (INFORME MUNICIPAL) -->
+    <mat-tab label="Participantes por Disciplina">
+      <div class="tab-content">
+        <div class="report-header-note">
+          <mat-icon>info</mat-icon>
+          <span>Este reporte corresponde al <strong>informe de cobertura municipal</strong> con el número de participantes por disciplina artística.</span>
+        </div>
+
+        <div class="disc-report-grid">
+          <div class="disc-report-card" *ngFor="let d of reporteDisciplinas">
+            <div class="disc-report-header" [style.border-color]="d.color">
+              <div class="disc-report-dot" [style.background]="d.color"></div>
+              <span class="disc-report-name">{{ d.disciplinaNombre }}</span>
+            </div>
+            <div class="disc-report-kpis">
+              <div class="dkpi">
+                <span class="dkpi-val">{{ d.totalParticipantes }}</span>
+                <span class="dkpi-lab">Participantes</span>
+              </div>
+              <div class="dkpi">
+                <span class="dkpi-val">{{ d.totalTalleres }}</span>
+                <span class="dkpi-lab">Talleres</span>
+              </div>
+              <div class="dkpi">
+                <span class="dkpi-val">{{ d.totalInstructores }}</span>
+                <span class="dkpi-lab">Instructores</span>
+              </div>
+            </div>
+            <div class="disc-report-bar-bg">
+              <div class="disc-report-bar-fill" [style.width.%]="getPorcentaje(d)" [style.background]="d.color"></div>
+            </div>
+            <span class="disc-report-pct">{{ getPorcentaje(d) }}% del total</span>
+          </div>
+        </div>
+
+        <!-- Tabla resumen -->
+        <mat-card class="table-card" style="margin-top:20px">
+          <mat-card-header>
+            <mat-card-title>Tabla Resumen — Informe Municipal</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="table-wrap">
+              <table mat-table [dataSource]="reporteDisciplinas" class="data-table">
+                <ng-container matColumnDef="disciplina">
+                  <th mat-header-cell *matHeaderCellDef>Disciplina Artística</th>
+                  <td mat-cell *matCellDef="let d">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div class="disc-dot-sm" [style.background]="d.color"></div>
+                      <strong>{{ d.disciplinaNombre }}</strong>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="talleres">
+                  <th mat-header-cell *matHeaderCellDef>N° Talleres</th>
+                  <td mat-cell *matCellDef="let d">{{ d.totalTalleres }}</td>
+                </ng-container>
+                <ng-container matColumnDef="instructores">
+                  <th mat-header-cell *matHeaderCellDef>N° Instructores</th>
+                  <td mat-cell *matCellDef="let d">{{ d.totalInstructores }}</td>
+                </ng-container>
+                <ng-container matColumnDef="participantes">
+                  <th mat-header-cell *matHeaderCellDef>N° Participantes</th>
+                  <td mat-cell *matCellDef="let d">
+                    <strong style="font-size:1.1rem">{{ d.totalParticipantes }}</strong>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="porcentaje">
+                  <th mat-header-cell *matHeaderCellDef>% Cobertura</th>
+                  <td mat-cell *matCellDef="let d">
+                    <div class="pct-cell">
+                      <div class="pct-bar-bg">
+                        <div class="pct-bar-fill" [style.width.%]="getPorcentaje(d)" [style.background]="d.color"></div>
+                      </div>
+                      <span>{{ getPorcentaje(d) }}%</span>
+                    </div>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="colsDisciplinas"></tr>
+                <tr mat-row *matRowDef="let row; columns: colsDisciplinas;"></tr>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Tab 2: Ocupación talleres -->
+    <mat-tab label="Ocupación de Talleres">
+      <div class="tab-content">
+        <mat-card class="table-card" style="margin-top:16px">
+          <mat-card-content>
+            <div class="table-wrap">
+              <table mat-table [dataSource]="reporteTalleres" class="data-table">
+                <ng-container matColumnDef="taller">
+                  <th mat-header-cell *matHeaderCellDef>Taller</th>
+                  <td mat-cell *matCellDef="let t"><strong>{{ t.tallerNombre }}</strong></td>
+                </ng-container>
+                <ng-container matColumnDef="disciplina">
+                  <th mat-header-cell *matHeaderCellDef>Disciplina</th>
+                  <td mat-cell *matCellDef="let t">{{ t.disciplinaNombre }}</td>
+                </ng-container>
+                <ng-container matColumnDef="instructor">
+                  <th mat-header-cell *matHeaderCellDef>Instructor</th>
+                  <td mat-cell *matCellDef="let t">{{ t.instructorNombre }}</td>
+                </ng-container>
+                <ng-container matColumnDef="salon">
+                  <th mat-header-cell *matHeaderCellDef>Salón</th>
+                  <td mat-cell *matCellDef="let t">{{ t.salonNombre }}</td>
+                </ng-container>
+                <ng-container matColumnDef="horario">
+                  <th mat-header-cell *matHeaderCellDef>Horario</th>
+                  <td mat-cell *matCellDef="let t">{{ t.horario }}</td>
+                </ng-container>
+                <ng-container matColumnDef="inscritos">
+                  <th mat-header-cell *matHeaderCellDef>Inscritos</th>
+                  <td mat-cell *matCellDef="let t">{{ t.totalInscritos }}/{{ t.cupoMaximo }}</td>
+                </ng-container>
+                <ng-container matColumnDef="disponible">
+                  <th mat-header-cell *matHeaderCellDef>Ocupación</th>
+                  <td mat-cell *matCellDef="let t">
+                    <div class="pct-cell">
+                      <div class="pct-bar-bg" style="width:80px">
+                        <div class="pct-bar-fill"
+                          [style.width.%]="getOcupacionPct(t)"
+                          [style.background]="getOcupacionPct(t) >= 90 ? '#ef4444' : getOcupacionPct(t) >= 70 ? '#f59e0b' : '#22c55e'">
+                        </div>
+                      </div>
+                      <span>{{ getOcupacionPct(t) }}%</span>
+                    </div>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="colsTalleres"></tr>
+                <tr mat-row *matRowDef="let row; columns: colsTalleres;"></tr>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Tab 3: Consulta JOIN -->
+    <mat-tab label="Consulta JOIN Completa">
+      <div class="tab-content">
+        <div class="report-header-note">
+          <mat-icon>join_inner</mat-icon>
+          <span>Consulta con JOIN: Participante → Inscripción → Taller → Instructor → Disciplina</span>
+        </div>
+        <mat-card class="filter-card" style="margin-bottom:12px">
+          <mat-card-content>
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Buscar en todos los campos...</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput [(ngModel)]="joinSearch" (ngModelChange)="applyJoinFilter()">
+            </mat-form-field>
+            <span class="table-count">{{ joinFiltered.length }} registros</span>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="table-card">
+          <mat-card-content>
+            <div class="table-wrap">
+              <table mat-table [dataSource]="joinFiltered" class="data-table">
+                <ng-container matColumnDef="participante">
+                  <th mat-header-cell *matHeaderCellDef>Participante</th>
+                  <td mat-cell *matCellDef="let r"><strong>{{ r.participante }}</strong></td>
+                </ng-container>
+                <ng-container matColumnDef="cedula">
+                  <th mat-header-cell *matHeaderCellDef>Cédula</th>
+                  <td mat-cell *matCellDef="let r">{{ r.cedula }}</td>
+                </ng-container>
+                <ng-container matColumnDef="barrio">
+                  <th mat-header-cell *matHeaderCellDef>Barrio</th>
+                  <td mat-cell *matCellDef="let r">{{ r.barrio }}</td>
+                </ng-container>
+                <ng-container matColumnDef="taller">
+                  <th mat-header-cell *matHeaderCellDef>Taller</th>
+                  <td mat-cell *matCellDef="let r">{{ r.taller }}</td>
+                </ng-container>
+                <ng-container matColumnDef="disciplina">
+                  <th mat-header-cell *matHeaderCellDef>Disciplina</th>
+                  <td mat-cell *matCellDef="let r">{{ r.disciplina }}</td>
+                </ng-container>
+                <ng-container matColumnDef="instructor">
+                  <th mat-header-cell *matHeaderCellDef>Instructor</th>
+                  <td mat-cell *matCellDef="let r">{{ r.instructor }}</td>
+                </ng-container>
+                <ng-container matColumnDef="horario">
+                  <th mat-header-cell *matHeaderCellDef>Horario</th>
+                  <td mat-cell *matCellDef="let r">{{ r.horario }}</td>
+                </ng-container>
+                <ng-container matColumnDef="fecha">
+                  <th mat-header-cell *matHeaderCellDef>Inscripción</th>
+                  <td mat-cell *matCellDef="let r">{{ r.fechaInscripcion | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="colsJoin"></tr>
+                <tr mat-row *matRowDef="let row; columns: colsJoin;"></tr>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

@@ -1,0 +1,32 @@
+.disc-cards { display: flex; flex-direction: column; gap: 10px; padding: 8px 0; }
+.disc-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border);
+  cursor: pointer; transition: all 0.15s;
+  &:hover { background: var(--surface); }
+  &.disc-selected { border-color: var(--primary); background: #e7f0f5; }
+}
+.disc-dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.disc-body { flex: 1; }
+.disc-card-name { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
+.disc-card-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+.disc-card-actions { display: flex; gap: 4px; }
+
+.color-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.color-swatch {
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  &:hover { transform: scale(1.2); }
+  &.color-selected { box-shadow: 0 0 0 3px #fff, 0 0 0 5px currentColor; transform: scale(1.15); }
+}
+
+.preview-disc {
+  .disc-preview {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 12px 20px; border-radius: 8px; border: 2px solid;
+    mat-icon { font-size: 24px; width: 24px; height: 24px; }
+    span { font-weight: 700; font-size: 1rem; }
+  }
+}
+
+.field-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px; }

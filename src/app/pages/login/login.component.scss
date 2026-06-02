@@ -1,0 +1,253 @@
+.login-wrapper {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 34px;
+  background:
+    linear-gradient(90deg, rgba(10, 22, 38, .74), rgba(10, 22, 38, .42)),
+    url('/images/casa-cultura.png') center / cover no-repeat,
+    var(--bg);
+}
+
+.login-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(5, 15, 28, .08), rgba(5, 15, 28, .22)),
+    rgba(255, 255, 255, .04);
+  backdrop-filter: saturate(1.04);
+}
+
+.login-panel {
+  width: min(1040px, 100%);
+  min-height: 590px;
+  display: grid;
+  grid-template-columns: 1.08fr .92fr;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .26);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .32);
+  backdrop-filter: blur(10px);
+}
+
+.institution-panel {
+  position: relative;
+  isolation: isolate;
+  padding: 46px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  background:
+    linear-gradient(135deg, rgba(7, 18, 32, .86), rgba(14, 58, 62, .72)),
+    url('/images/imagen1.jpg') center / cover no-repeat;
+  color: #fff;
+}
+
+.institution-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(5, 13, 24, .12), rgba(5, 13, 24, .38));
+}
+
+.brand-stack {
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .34);
+  display: grid;
+  gap: 26px;
+}
+
+.brand-mark {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, .15);
+  border: 1px solid rgba(255, 255, 255, .24);
+}
+
+.brand-mark mat-icon {
+  width: 31px;
+  height: 31px;
+  font-size: 31px;
+}
+
+.eyebrow,
+.form-kicker {
+  margin: 0 0 12px;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  color: rgba(255, 255, 255, .78);
+}
+
+.institution-panel h1 {
+  max-width: 420px;
+  margin: 0 0 14px;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+  line-height: 1.02;
+  font-weight: 900;
+}
+
+.institution-copy {
+  max-width: 440px;
+  margin: 0;
+  color: rgba(255, 255, 255, .84);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.feature-list {
+  display: grid;
+  gap: 12px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .32);
+}
+
+.feature-list div {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, .9);
+  font-size: .92rem;
+  font-weight: 800;
+}
+
+.feature-list mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  color: rgba(255, 255, 255, .72);
+}
+
+.login-card {
+  padding: 46px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(255, 255, 255, .96);
+}
+
+.login-header {
+  margin-bottom: 24px;
+}
+
+.form-kicker {
+  display: block;
+  color: var(--primary);
+}
+
+.login-header h2 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 1.65rem;
+  font-weight: 900;
+}
+
+.login-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: .94rem;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-form .mat-mdc-form-field {
+  background: #fbfdff;
+}
+
+.login-form .mat-mdc-form-field .mat-mdc-form-field-flex {
+  min-height: 58px;
+  align-items: center;
+  padding: 0 14px;
+}
+
+.login-form .mat-mdc-form-field .mat-mdc-form-field-infix {
+  min-height: 58px;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+.login-form .mat-mdc-text-field-input {
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1.4;
+}
+
+.error-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: 8px;
+  color: var(--danger);
+  background: #fce8ea;
+  border: 1px solid #f3c8cc;
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.login-btn {
+  min-height: 48px;
+  margin-top: 4px;
+  border-radius: 8px !important;
+  font-size: .96rem !important;
+  font-weight: 900 !important;
+}
+
+.login-btn mat-icon,
+.login-btn mat-spinner {
+  margin-right: 8px;
+}
+
+.login-hint {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: .85rem;
+}
+
+.login-hint strong {
+  color: var(--text-primary);
+  font-weight: 900;
+}
+
+@media(max-width: 820px) {
+  .login-wrapper {
+    padding: 20px;
+    align-items: stretch;
+  }
+
+  .login-panel {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .institution-panel,
+  .login-card {
+    padding: 28px 22px;
+  }
+
+  .feature-list {
+    grid-template-columns: 1fr;
+  }
+}

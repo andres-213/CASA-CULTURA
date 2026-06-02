@@ -1,0 +1,53 @@
+.tab-content { padding-top: 16px; }
+
+.summary-strip {
+  display: flex; align-items: center; gap: 0;
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 18px 28px;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 16px;
+}
+.summary-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 100px;
+  .sum-value { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; }
+  .sum-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+}
+.sum-divider { width: 1px; height: 40px; background: var(--border); }
+
+.report-header-note {
+  display: flex; align-items: center; gap: 10px;
+  background: #e7f0f5; border: 1px solid #c9dce8;
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+  mat-icon { color: var(--primary); font-size: 20px; }
+  span { font-size: 0.88rem; color: var(--text-primary); }
+}
+
+.disc-report-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;
+}
+
+.disc-report-card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 20px; border-left: 4px solid;
+}
+.disc-report-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.disc-report-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.disc-report-name { font-weight: 700; font-size: 1rem; color: var(--text-primary); }
+.disc-report-kpis { display: flex; gap: 16px; margin-bottom: 16px; }
+.dkpi {
+  display: flex; flex-direction: column; gap: 2px;
+  .dkpi-val { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+  .dkpi-lab { font-size: 0.72rem; color: var(--text-muted); }
+}
+.disc-report-bar-bg { height: 6px; background: var(--surface); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+.disc-report-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+.disc-report-pct { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+
+.disc-dot-sm { width: 10px; height: 10px; border-radius: 50%; }
+.pct-cell { display: flex; align-items: center; gap: 10px; }
+.pct-bar-bg { flex: 1; height: 6px; background: var(--surface); border-radius: 99px; overflow: hidden; min-width: 60px; }
+.pct-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s; }
+
+@media print {
+  .topbar, .app-sidenav, mat-tab-header { display: none !important; }
+  .content-area { padding: 0 !important; }
+}

@@ -1,0 +1,158 @@
+<div class="dashboard-page">
+  <section class="dashboard-hero">
+    <div>
+      <span class="eyebrow">Resumen operativo</span>
+      <h1>Panel de Control</h1>
+      <p>Bienvenido, <strong>{{ userName }}</strong>. Consulta el estado de talleres, inscripciones y recursos de la Casa de la Cultura.</p>
+    </div>
+    <div class="hero-date">
+      <mat-icon>calendar_month</mat-icon>
+      <span>{{ today | date:'dd/MM/yyyy' }}</span>
+    </div>
+  </section>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--accent:#285f9f">
+      <div class="kpi-icon"><mat-icon>groups</mat-icon></div>
+      <div class="kpi-info">
+        <span class="kpi-label">Participantes activos</span>
+        <span class="kpi-value">{{ stats.totalParticipantes || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" style="--accent:#0f766e">
+      <div class="kpi-icon"><mat-icon>school</mat-icon></div>
+      <div class="kpi-info">
+        <span class="kpi-label">Instructores</span>
+        <span class="kpi-value">{{ stats.totalInstructores || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" style="--accent:#257a4f">
+      <div class="kpi-icon"><mat-icon>event_available</mat-icon></div>
+      <div class="kpi-info">
+        <span class="kpi-label">Talleres activos</span>
+        <span class="kpi-value">{{ stats.totalTalleres || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" style="--accent:#b7791f">
+      <div class="kpi-icon"><mat-icon>assignment_ind</mat-icon></div>
+      <div class="kpi-info">
+        <span class="kpi-label">Inscripciones</span>
+        <span class="kpi-value">{{ stats.totalInscritos || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" style="--accent:#b42318">
+      <div class="kpi-icon"><mat-icon>event_busy</mat-icon></div>
+      <div class="kpi-info">
+        <span class="kpi-label">Talleres sin cupo</span>
+        <span class="kpi-value">{{ stats.talleresSinCupo || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" style="--accent:#52677a">
+      <div class="kpi-icon"><mat-icon>inventory_2</mat-icon></div>
+      <div class="kpi-info">
+        <span class="kpi-label">Stock bajo</span>
+        <span class="kpi-value">{{ stats.materialesEnStockBajo || 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>palette</mat-icon>
+        <mat-card-title>Participantes por Disciplina</mat-card-title>
+        <mat-card-subtitle>Distribución del periodo actual</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="empty-state" *ngIf="!reporteDisciplinas.length">
+          <mat-icon>insights</mat-icon>
+          <span>Sin datos para mostrar.</span>
+        </div>
+        <div class="metric-list" *ngIf="reporteDisciplinas.length">
+          <div class="metric-item" *ngFor="let d of reporteDisciplinas">
+            <div class="metric-row">
+              <span class="metric-name">{{ d.disciplinaNombre }}</span>
+              <span class="metric-count">{{ d.totalParticipantes }} personas</span>
+            </div>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="(d.totalParticipantes / (stats.totalInscritos || 1)) * 100"
+                [style.background]="d.color">
+              </div>
+            </div>
+            <div class="metric-meta">
+              <span>{{ d.totalTalleres }} talleres</span>
+              <span>{{ d.totalInstructores }} instructores</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>event</mat-icon>
+        <mat-card-title>Ocupación de Talleres</mat-card-title>
+        <mat-card-subtitle>Top 5 por inscritos</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="empty-state" *ngIf="!reporteTalleres.length">
+          <mat-icon>event_note</mat-icon>
+          <span>Sin talleres registrados.</span>
+        </div>
+        <div class="workshop-list" *ngIf="reporteTalleres.length">
+          <div class="workshop-item" *ngFor="let t of reporteTalleres">
+            <div class="workshop-title">
+              <span>{{ t.tallerNombre }}</span>
+              <strong>{{ t.totalInscritos }}/{{ t.cupoMaximo }}</strong>
+            </div>
+            <span class="workshop-sub">{{ t.disciplinaNombre }} · {{ t.instructorNombre }}</span>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="getOcupacionPct(t)"
+                [style.background]="getOcupacionColor(getOcupacionPct(t))">
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-card class="quick-access-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>bolt</mat-icon>
+      <mat-card-title>Acceso Rápido</mat-card-title>
+      <mat-card-subtitle>Operaciones frecuentes del sistema</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="quick-grid">
+        <a mat-button routerLink="/participantes" class="quick-btn">
+          <mat-icon>people</mat-icon><span>Participantes</span>
+        </a>
+        <a mat-button routerLink="/instructores" class="quick-btn">
+          <mat-icon>school</mat-icon><span>Instructores</span>
+        </a>
+        <a mat-button routerLink="/talleres" class="quick-btn">
+          <mat-icon>event</mat-icon><span>Talleres</span>
+        </a>
+        <a mat-button routerLink="/inscripciones" class="quick-btn">
+          <mat-icon>how_to_reg</mat-icon><span>Inscripciones</span>
+        </a>
+        <a mat-button routerLink="/materiales" class="quick-btn">
+          <mat-icon>inventory_2</mat-icon><span>Materiales</span>
+        </a>
+        <a mat-button routerLink="/reportes" class="quick-btn">
+          <mat-icon>bar_chart</mat-icon><span>Reportes</span>
+        </a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

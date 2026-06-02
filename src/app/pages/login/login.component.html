@@ -1,0 +1,81 @@
+<div class="login-wrapper">
+  <section class="login-panel">
+    <div class="institution-panel">
+      <div class="brand-stack">
+        <div class="brand-mark">
+          <mat-icon>museum</mat-icon>
+        </div>
+        <div>
+          <p class="eyebrow">Sistema Municipal</p>
+          <h1>Casa de la Cultura</h1>
+          <p class="institution-copy">Gestion administrativa de talleres, asistencia, recursos y reportes operativos.</p>
+        </div>
+      </div>
+
+      <div class="feature-list">
+        <div>
+          <mat-icon>event_available</mat-icon>
+          <span>Programacion cultural</span>
+        </div>
+        <div>
+          <mat-icon>groups</mat-icon>
+          <span>Control de participantes</span>
+        </div>
+        <div>
+          <mat-icon>analytics</mat-icon>
+          <span>Reportes municipales</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-card">
+      <div class="login-header">
+        <span class="form-kicker">Acceso seguro</span>
+        <h2>Iniciar sesion</h2>
+        <p>Ingrese sus credenciales institucionales</p>
+      </div>
+
+      <form class="login-form" #loginForm="ngForm" (ngSubmit)="login(loginForm)" novalidate>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Usuario</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput [(ngModel)]="username" name="username" required minlength="3" pattern="^[A-Za-z]+$" placeholder="Ingrese su usuario" autocomplete="username">
+          <mat-error *ngIf="loginForm.submitted || loginForm.form.get('username')?.touched">
+            <span *ngIf="loginForm.form.get('username')?.hasError('required')">El usuario es obligatorio.</span>
+            <span *ngIf="loginForm.form.get('username')?.hasError('minlength')">El usuario debe tener al menos 3 caracteres.</span>
+            <span *ngIf="loginForm.form.get('username')?.hasError('pattern')">Solo letras sin numeros ni simbolos.</span>
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contrasena</mat-label>
+          <mat-icon matPrefix>lock</mat-icon>
+          <input matInput [(ngModel)]="password" name="password" [type]="hidePassword ? 'password' : 'text'" required minlength="9" placeholder="Ingrese su contrasena" autocomplete="current-password">
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword" matTooltip="Mostrar u ocultar contrasena">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="loginForm.submitted || loginForm.form.get('password')?.touched">
+            <span *ngIf="loginForm.form.get('password')?.hasError('required')">La contrasena es obligatoria.</span>
+            <span *ngIf="loginForm.form.get('password')?.hasError('minlength')">La contrasena debe tener al menos 9 caracteres.</span>
+          </mat-error>
+        </mat-form-field>
+
+        <div class="error-box" *ngIf="error">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ error }}</span>
+        </div>
+
+        <button mat-raised-button color="primary" type="submit" class="login-btn" [disabled]="loading || loginForm.invalid">
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          <mat-icon *ngIf="!loading">login</mat-icon>
+          <span>{{ loading ? 'Ingresando...' : 'Ingresar' }}</span>
+        </button>
+      </form>
+
+      <div class="login-hint">
+        <span>Demo</span>
+        <strong>admin / admin123</strong>
+      </div>
+    </div>
+  </section>
+</div>

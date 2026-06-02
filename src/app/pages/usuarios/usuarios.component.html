@@ -1,0 +1,255 @@
+<div class="crud-page">
+  <div class="crud-header">
+    <div><h2>Gestion de Usuarios</h2><p>Administracion de usuarios con acceso al sistema</p></div>
+    <button mat-raised-button color="primary" (click)="nuevo()"><mat-icon>person_add</mat-icon> Nuevo Usuario</button>
+  </div>
+
+  <div class="alert-success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
+  <div class="alert-error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
+
+  <div class="crud-layout">
+    <mat-card class="table-card">
+      <mat-card-content>
+        <div class="table-toolbar user-filters">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Buscar usuario</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Nombre, usuario o rol">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Rol</mat-label>
+            <mat-select [(ngModel)]="roleFilter" (selectionChange)="applyFilters()">
+              <mat-option value="todos">Todos</mat-option>
+              <mat-option value="admin">Administrador</mat-option>
+              <mat-option value="operador">Operador</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Estado</mat-label>
+            <mat-select [(ngModel)]="statusFilter" (selectionChange)="applyFilters()">
+              <mat-option value="todos">Todos</mat-option>
+              <mat-option value="activo">Activos</mat-option>
+              <mat-option value="inactivo">Inactivos</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <span class="table-count">{{ dataSource.filteredData.length || 0 }} usuarios</span>
+        </div>
+
+        <div class="table-wrap">
+          <table mat-table [dataSource]="dataSource" matSort class="data-table">
+
+            <ng-container matColumnDef="usuario">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Usuario</th>
+              <td mat-cell *matCellDef="let u">
+                <div class="cell-avatar">
+                  <div class="mini-avatar" [class.avatar-admin]="u.rol === 'admin'">
+                    {{ u.nombre?.[0] }}
+                  </div>
+                  <div>
+                    <span class="cell-main">{{ u.username }}</span>
+                    <span class="cell-sub" *ngIf="u.id === currentUserId">Tu</span>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre Completo</th>
+              <td mat-cell *matCellDef="let u">{{ u.nombre }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="rol">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Rol</th>
+              <td mat-cell *matCellDef="let u">
+                <span class="badge" [class.badge-purple]="u.rol === 'admin'" [class.badge-blue]="u.rol === 'operador'">
+                  <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle">
+                    {{ u.rol === 'admin' ? 'admin_panel_settings' : 'manage_accounts' }}
+                  </mat-icon>
+                  {{ u.rol | titlecase }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="activo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+              <td mat-cell *matCellDef="let u">
+                <span class="badge" [class.badge-green]="u.activo" [class.badge-red]="!u.activo">
+                  {{ u.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Acciones</th>
+              <td mat-cell *matCellDef="let u">
+                <button mat-icon-button color="primary" (click)="$event.stopPropagation(); editar(u)" matTooltip="Editar usuario">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button color="warn" (click)="$event.stopPropagation(); confirmarEliminar(u.id)"
+                        [disabled]="u.id === currentUserId" matTooltip="Eliminar usuario">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                [class.row-selected]="selected?.id === row.id"
+                (click)="select(row)">
+            </tr>
+
+          </table>
+        </div>
+
+        <mat-paginator class="usuarios-paginator" [pageSize]="8" [pageSizeOptions]="[8]" showFirstLastButtons>
+        </mat-paginator>
+
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="form-card" *ngIf="isNew || selected">
+      <mat-card-header>
+        <mat-card-title>{{ isNew ? 'Nuevo Usuario' : 'Editar Usuario' }}</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form #usuarioForm="ngForm" class="form-grid" novalidate>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre de Usuario *</mat-label>
+            <mat-icon matPrefix>person</mat-icon>
+
+            <input matInput
+                   [(ngModel)]="form.username"
+                   name="username"
+                   [readonly]="!isNew"
+                   [pattern]="usernamePattern"
+                   required
+                   autocomplete="username">
+
+            <mat-error *ngIf="usuarioForm.submitted || usuarioForm.controls['username']?.touched">
+              <span *ngIf="usuarioForm.controls['username']?.hasError('required')">
+                El usuario es obligatorio.
+              </span>
+
+              <span *ngIf="usuarioForm.controls['username']?.hasError('pattern')">
+                Solo letras, numeros y espacios.
+              </span>
+            </mat-error>
+
+            <mat-hint>Puede contener letras, números y espacios.</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ isNew ? 'Contrasena *' : 'Nueva Contrasena' }}</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+
+            <input matInput
+                   [type]="hidePass ? 'password' : 'text'"
+                   [(ngModel)]="form.password"
+                   name="password"
+                   [minlength]="passwordMinLength"
+                   [required]="isNew"
+                   autocomplete="new-password">
+
+            <button mat-icon-button
+                    matSuffix
+                    type="button"
+                    tabindex="-1"
+                    (click)="hidePass = !hidePass">
+              <mat-icon>{{ hidePass ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+
+            <mat-error *ngIf="usuarioForm.submitted || usuarioForm.controls['password']?.touched">
+              <span *ngIf="usuarioForm.controls['password']?.hasError('required')">
+                La contrasena es obligatoria.
+              </span>
+
+              <span *ngIf="usuarioForm.controls['password']?.hasError('minlength')">
+                Debe tener al menos 9 caracteres.
+              </span>
+            </mat-error>
+
+            <mat-hint>Mas de 8 caracteres. Simbolos permitidos, emojis no.</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-col">
+            <mat-label>Nombre Completo *</mat-label>
+
+            <input matInput
+                   [(ngModel)]="form.nombre"
+                   name="nombre"
+                   required
+                   [pattern]="nombrePattern"
+                   autocomplete="name">
+
+            <mat-error *ngIf="usuarioForm.submitted || usuarioForm.controls['nombre']?.touched">
+              <span *ngIf="usuarioForm.controls['nombre']?.hasError('required')">
+                El nombre completo es obligatorio.
+              </span>
+
+              <span *ngIf="usuarioForm.controls['nombre']?.hasError('pattern')">
+                Solo letras y espacios.
+              </span>
+            </mat-error>
+
+            <mat-hint>Solo letras y espacios.</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Rol</mat-label>
+            <mat-select [(ngModel)]="form.rol" name="rol">
+              <mat-option value="admin">Administrador</mat-option>
+              <mat-option value="operador">Operador</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div>
+            <mat-slide-toggle [(ngModel)]="form.activo" name="activo" color="primary">
+              Usuario Activo
+            </mat-slide-toggle>
+          </div>
+
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button (click)="cancelar()">Cancelar</button>
+
+        <button mat-raised-button
+                color="primary"
+                (click)="guardar()"
+                [disabled]="usuarioForm.invalid">
+          <mat-icon>save</mat-icon>
+          {{ isNew ? 'Crear Usuario' : 'Actualizar' }}
+        </button>
+      </mat-card-actions>
+
+    </mat-card>
+  </div>
+</div>
+
+<div class="overlay" *ngIf="showConfirmDelete">
+  <div class="confirm-dialog">
+    <div class="confirm-icon">
+      <mat-icon>warning</mat-icon>
+    </div>
+
+    <h3>Eliminar Usuario?</h3>
+
+    <p>El usuario perdera acceso al sistema permanentemente.</p>
+
+    <div class="confirm-actions">
+      <button mat-button (click)="showConfirmDelete = false">Cancelar</button>
+
+      <button mat-raised-button color="warn" (click)="eliminar()">
+        <mat-icon>delete</mat-icon>
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>

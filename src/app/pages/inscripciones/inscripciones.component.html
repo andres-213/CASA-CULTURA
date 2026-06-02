@@ -1,0 +1,172 @@
+﻿<div class="crud-page">
+  <div class="crud-header">
+    <div>
+      <h2>Inscripciones</h2>
+      <p>Gestión de inscripciones de participantes en talleres (relación muchos a muchos)</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="nuevaInscripcion()">
+      <mat-icon>how_to_reg</mat-icon> Nueva Inscripción
+    </button>
+  </div>
+
+  <div class="alert-success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
+  <div class="alert-error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
+
+  <!-- Formulario nueva inscripción -->
+  <mat-card class="form-inline-card" *ngIf="showForm">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>how_to_reg</mat-icon>
+      <mat-card-title>Inscribir Participante</mat-card-title>
+      <mat-card-subtitle>Seleccione participante y taller. El sistema validará cupo y horario automáticamente.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form #inscripcionForm="ngForm" class="form-grid form-grid-2" novalidate (ngSubmit)="guardar(inscripcionForm)">
+        <mat-form-field appearance="outline">
+          <mat-label>Participante *</mat-label>
+          <mat-select [(ngModel)]="form.participanteId" name="participanteId" required>
+            <mat-option *ngFor="let p of participantes" [value]="p.id">
+              {{ p.nombre }} {{ p.apellido }} - {{ p.cedula }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="inscripcionForm.submitted || inscripcionForm.form.get('participanteId')?.touched">
+            Seleccione un participante.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Taller *</mat-label>
+          <mat-select [(ngModel)]="form.tallerId" name="tallerId" required>
+            <mat-option *ngFor="let t of talleres" [value]="t.id" [disabled]="t.cupoActual >= t.cupoMaximo">
+              {{ getTallerInfo(t) }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="inscripcionForm.submitted || inscripcionForm.form.get('tallerId')?.touched">
+            Seleccione un taller.
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button (click)="cancelar()">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="inscripcionForm.invalid" (click)="guardar(inscripcionForm)">
+        <mat-icon>check</mat-icon> Inscribir
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Filtros -->
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Buscar participante o taller...</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Taller</mat-label>
+          <mat-select [(ngModel)]="filterTallerId" (ngModelChange)="applyFilter()">
+            <mat-option [value]="null">Todos</mat-option>
+            <mat-option *ngFor="let t of talleres" [value]="t.id">{{ t.nombre }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Estado</mat-label>
+          <mat-select [(ngModel)]="filterEstado" (ngModelChange)="applyFilter()">
+            <mat-option value="">Todos</mat-option>
+            <mat-option value="activa">Activa</mat-option>
+            <mat-option value="retirada">Retirada</mat-option>
+            <mat-option value="completada">Completada</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-button (click)="clearFilters()"><mat-icon>clear</mat-icon> Limpiar</button>
+        <span class="table-count">{{ filtered.length }} inscripciones</span>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tabla -->
+  <mat-card class="table-card" style="margin-top:16px">
+    <mat-card-content>
+      <div class="table-wrap">
+        <table mat-table [dataSource]="filtered" class="data-table">
+          <ng-container matColumnDef="participante">
+            <th mat-header-cell *matHeaderCellDef>Participante</th>
+            <td mat-cell *matCellDef="let i">
+              <div class="cell-avatar">
+                <div class="mini-avatar">{{ i.participante?.nombre[0] }}</div>
+                <div>
+                  <span class="cell-main">{{ i.participante?.nombre }} {{ i.participante?.apellido }}</span>
+                  <span class="cell-sub">{{ i.participante?.barrio }}</span>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="taller">
+            <th mat-header-cell *matHeaderCellDef>Taller</th>
+            <td mat-cell *matCellDef="let i">
+              <span class="cell-main">{{ i.taller?.nombre }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="disciplina">
+            <th mat-header-cell *matHeaderCellDef>Disciplina</th>
+            <td mat-cell *matCellDef="let i">
+              <span class="disc-badge"
+                [style.background]="i.taller?.disciplina?.color + '22'"
+                [style.color]="i.taller?.disciplina?.color">
+                {{ i.taller?.disciplina?.nombre }}
+              </span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="horario">
+            <th mat-header-cell *matHeaderCellDef>Horario</th>
+            <td mat-cell *matCellDef="let i">{{ i.taller?.horario }}</td>
+          </ng-container>
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Inscrito el</th>
+            <td mat-cell *matCellDef="let i">{{ i.fechaInscripcion | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let i">
+              <span class="badge" [ngClass]="getEstadoColor(i.estado)">{{ i.estado | titlecase }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let i">
+              <button mat-icon-button [matMenuTriggerFor]="menuEstado" matTooltip="Cambiar estado" *ngIf="i.estado === 'activa'">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menuEstado="matMenu">
+                <button mat-menu-item (click)="cambiarEstado(i, 'completada')">
+                  <mat-icon color="primary">check_circle</mat-icon> Completada
+                </button>
+                <button mat-menu-item (click)="cambiarEstado(i, 'retirada')">
+                  <mat-icon color="warn">cancel</mat-icon> Retirar
+                </button>
+              </mat-menu>
+              <button mat-icon-button color="warn" (click)="confirmarEliminar(i.id)" matTooltip="Eliminar inscripción">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div class="overlay" *ngIf="showConfirmDelete">
+  <div class="confirm-dialog">
+    <div class="confirm-icon"><mat-icon>warning</mat-icon></div>
+    <h3>¿Eliminar Inscripción?</h3>
+    <p>Se liberará el cupo del taller. Esta acción no se puede deshacer.</p>
+    <div class="confirm-actions">
+      <button mat-button (click)="showConfirmDelete = false">Cancelar</button>
+      <button mat-raised-button color="warn" (click)="eliminar()"><mat-icon>delete</mat-icon> Eliminar</button>
+    </div>
+  </div>
+</div>
+

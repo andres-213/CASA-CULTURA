@@ -1,0 +1,145 @@
+<div class="crud-page">
+  <div class="crud-header">
+    <div><h2>Registro de Asistencia</h2><p>Control de asistencia por sesión de taller</p></div>
+  </div>
+
+  <div class="alert-success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
+  <div class="alert-error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
+
+  <!-- Selector de taller -->
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="filter-field" style="min-width:280px">
+          <mat-label>Seleccionar Taller</mat-label>
+          <mat-select [(ngModel)]="selectedTallerId" (ngModelChange)="onTallerChange()">
+            <mat-option *ngFor="let t of talleres" [value]="t.id">
+              {{ t.nombre }} — {{ t.horario }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field" style="min-width:240px" *ngIf="selectedTallerId">
+          <mat-label>Seleccionar Sesión</mat-label>
+          <mat-select [(ngModel)]="selectedSesionId" (ngModelChange)="onSesionChange()">
+            <mat-option *ngFor="let s of sesiones" [value]="s.id">
+              {{ s.fecha | date:'dd/MM/yyyy' }} — {{ s.tema }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button color="primary" *ngIf="selectedTallerId" (click)="showNuevaSesion = true; clearMessages()">
+          <mat-icon>add</mat-icon> Nueva Sesión
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Nueva sesión form -->
+  <mat-card class="form-inline-card" *ngIf="showNuevaSesion">
+    <mat-card-header>
+      <mat-card-title>Nueva Sesión de Taller</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form #nuevaSesionNgForm="ngForm" class="form-grid form-grid-2" novalidate>
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha *</mat-label>
+          <input matInput type="date" [(ngModel)]="nuevaSesionForm.fecha" name="fecha" required>
+          <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('fecha')?.touched">
+            La fecha es obligatoria.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Tema de la Sesión *</mat-label>
+          <input matInput [(ngModel)]="nuevaSesionForm.tema" name="tema" required minlength="3" maxlength="120" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]+$" placeholder="Ej: Introducción a los acordes">
+          <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('tema')?.touched">
+            <span *ngIf="nuevaSesionNgForm.form.get('tema')?.hasError('required')">El tema es obligatorio.</span>
+            <span *ngIf="nuevaSesionNgForm.form.get('tema')?.hasError('pattern')">Caracteres inválidos en el tema.</span>
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-col">
+          <mat-label>Observaciones</mat-label>
+          <textarea matInput [(ngModel)]="nuevaSesionForm.observaciones" name="observaciones" rows="2" maxlength="150" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]*$"></textarea>
+          <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('observaciones')?.touched">
+            <span *ngIf="nuevaSesionNgForm.form.get('observaciones')?.hasError('pattern')">Caracteres inválidos en las observaciones.</span>
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button (click)="showNuevaSesion = false">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="nuevaSesionNgForm.invalid" (click)="crearSesion(nuevaSesionNgForm)"><mat-icon>save</mat-icon> Crear Sesión</button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Lista de sesiones -->
+  <div class="sessions-layout" *ngIf="selectedTallerId">
+    <mat-card class="sessions-list-card">
+      <mat-card-header><mat-card-title>Sesiones del Taller</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div *ngIf="sesiones.length === 0" class="empty-state">
+          <mat-icon>event_note</mat-icon>
+          <p>No hay sesiones registradas. Crea la primera sesión.</p>
+        </div>
+        <div class="session-item" *ngFor="let s of sesiones" [class.session-active]="selectedSesionId === s.id" (click)="selectedSesionId = s.id; onSesionChange()">
+          <div class="session-dot"></div>
+          <div class="session-info">
+            <span class="session-date">{{ s.fecha | date:'dd MMM yyyy' }}</span>
+            <span class="session-tema">{{ s.tema }}</span>
+          </div>
+          <button mat-icon-button color="warn" (click)="eliminarSesion(s.id); $event.stopPropagation()" matTooltip="Eliminar sesión">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tabla de asistencia -->
+    <mat-card class="asistencia-card" *ngIf="selectedSesion">
+      <mat-card-header>
+        <mat-card-title>Asistencia — {{ selectedSesion.tema }}</mat-card-title>
+        <mat-card-subtitle>
+          {{ selectedSesion.fecha | date:'dd/MM/yyyy' }} |
+          Asistieron: <strong>{{ getTotalAsistieron() }}</strong> de <strong>{{ participantesTaller.length }}</strong>
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="participantesTaller.length === 0" class="empty-state">
+          <mat-icon>people</mat-icon>
+          <p>No hay participantes inscritos en este taller.</p>
+        </div>
+
+        <div class="attendance-list">
+          <div class="attendance-item" *ngFor="let p of participantesTaller">
+            <div class="att-participant">
+              <div class="mini-avatar" [class.att-present]="asistenciaMap[p.id]?.asistio" [class.att-absent]="!asistenciaMap[p.id]?.asistio">
+                {{ p.nombre[0] }}
+              </div>
+              <div class="att-info">
+                <span class="att-name">{{ p.nombre }} {{ p.apellido }}</span>
+                <span class="att-barrio">{{ p.barrio }}</span>
+              </div>
+            </div>
+            <div class="att-controls">
+              <mat-slide-toggle
+                [(ngModel)]="asistenciaMap[p.id].asistio"
+                color="primary"
+                [checked]="asistenciaMap[p.id]?.asistio">
+                {{ asistenciaMap[p.id]?.asistio ? 'Asistió' : 'Faltó' }}
+              </mat-slide-toggle>
+              <mat-form-field appearance="outline" class="obs-field" *ngIf="!asistenciaMap[p.id]?.asistio">
+                <mat-label>Observación</mat-label>
+                <input matInput [(ngModel)]="asistenciaMap[p.id].observacion" placeholder="Excusa, justificación...">
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end" *ngIf="participantesTaller.length > 0">
+        <button mat-raised-button color="primary" (click)="guardarAsistencia()">
+          <mat-icon>save</mat-icon> Guardar Asistencia
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

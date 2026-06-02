@@ -1,0 +1,232 @@
+<div class="crud-page">
+  <div class="crud-header">
+    <div><h2>Materiales Artísticos</h2><p>Inventario y control de uso de materiales</p></div>
+    <div class="header-actions">
+      <button mat-stroked-button color="primary" (click)="showUsoForm = !showUsoForm; clearMessages()">
+        <mat-icon>assignment_add</mat-icon> Registrar Uso
+      </button>
+      <button mat-raised-button color="primary" (click)="nuevo()">
+        <mat-icon>add</mat-icon> Nuevo Material
+      </button>
+    </div>
+  </div>
+
+  <div class="alert-success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
+  <div class="alert-error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
+
+  <!-- Formulario registrar uso -->
+  <mat-card class="form-inline-card" *ngIf="showUsoForm">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>inventory_2</mat-icon>
+      <mat-card-title>Registrar Uso de Material en Taller</mat-card-title>
+      <mat-card-subtitle>El inventario se actualizará automáticamente.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form #usoMaterialForm="ngForm" class="form-grid form-grid-3" novalidate (ngSubmit)="registrarUso(usoMaterialForm)">
+        <mat-form-field appearance="outline">
+          <mat-label>Material *</mat-label>
+          <mat-select [(ngModel)]="usoForm.materialId" name="materialId" required>
+            <mat-option *ngFor="let m of materiales" [value]="m.id" [disabled]="m.cantidadDisponible === 0">
+              {{ m.nombre }} (Disp: {{ m.cantidadDisponible }} {{ m.unidad }})
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="usoMaterialForm.submitted || usoMaterialForm.form.get('materialId')?.touched">
+            Seleccione un material.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Taller *</mat-label>
+          <mat-select [(ngModel)]="usoForm.tallerId" name="tallerId" required>
+            <mat-option *ngFor="let t of talleres" [value]="t.id">{{ t.nombre }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="usoMaterialForm.submitted || usoMaterialForm.form.get('tallerId')?.touched">
+            Seleccione un taller.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha *</mat-label>
+          <input matInput type="date" [(ngModel)]="usoForm.fecha" name="fecha" required>
+          <mat-error *ngIf="usoMaterialForm.submitted || usoMaterialForm.form.get('fecha')?.touched">
+            La fecha es obligatoria.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Cantidad Usada *</mat-label>
+          <input matInput type="number" [(ngModel)]="usoForm.cantidadUsada" name="cantidadUsada" min="1" required>
+          <mat-error *ngIf="usoMaterialForm.submitted || usoMaterialForm.form.get('cantidadUsada')?.touched">
+            <span *ngIf="usoMaterialForm.form.get('cantidadUsada')?.hasError('required')">La cantidad es obligatoria.</span>
+            <span *ngIf="usoMaterialForm.form.get('cantidadUsada')?.hasError('min')">La cantidad debe ser mayor a 0.</span>
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-col">
+          <mat-label>Observaciones</mat-label>
+          <input matInput [(ngModel)]="usoForm.observaciones" name="observaciones" maxlength="150" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]*$">
+          <mat-error *ngIf="usoMaterialForm.submitted || usoMaterialForm.form.get('observaciones')?.touched">
+            Caracteres inválidos en las observaciones.
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button (click)="showUsoForm = false">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="usoMaterialForm.invalid" (click)="registrarUso(usoMaterialForm)">
+        <mat-icon>save</mat-icon> Registrar
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="mat-elevation-z0">
+    <!-- Tab Inventario -->
+    <mat-tab label="Inventario">
+      <div class="tab-content">
+        <div class="crud-layout">
+          <mat-card class="table-card">
+            <mat-card-content>
+              <div class="table-wrap">
+                <table mat-table [dataSource]="materiales" class="data-table">
+                  <ng-container matColumnDef="nombre">
+                    <th mat-header-cell *matHeaderCellDef>Material</th>
+                    <td mat-cell *matCellDef="let m">
+                      <span class="cell-main">{{ m.nombre }}</span>
+                      <span class="cell-sub">{{ m.descripcion }}</span>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="categoria">
+                    <th mat-header-cell *matHeaderCellDef>Categoría</th>
+                    <td mat-cell *matCellDef="let m">
+                      <span class="badge badge-purple">{{ m.categoria }}</span>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="cantidad">
+                    <th mat-header-cell *matHeaderCellDef>Stock</th>
+                    <td mat-cell *matCellDef="let m">
+                      <span class="stock-pill" [ngClass]="getStockClass(m)">
+                        {{ m.cantidadDisponible }} {{ m.unidad }}
+                      </span>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="costo">
+                    <th mat-header-cell *matHeaderCellDef>Costo Unitario</th>
+                    <td mat-cell *matCellDef="let m">${{ m.costoUnitario | number }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                    <td mat-cell *matCellDef="let m">
+                      <button mat-icon-button color="primary" (click)="select(m)"><mat-icon>edit</mat-icon></button>
+                      <button mat-icon-button color="warn" (click)="confirmarEliminar(m.id)"><mat-icon>delete</mat-icon></button>
+                    </td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="displayedColumnsM"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumnsM;" [class.row-selected]="selectedMat?.id === row.id" (click)="select(row)"></tr>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Form Material -->
+          <mat-card class="form-card" *ngIf="isNew || selectedMat">
+            <mat-card-header><mat-card-title>{{ isNew ? 'Nuevo Material' : 'Editar Material' }}</mat-card-title></mat-card-header>
+            <mat-card-content>
+              <form #materialForm="ngForm" class="form-grid" novalidate (ngSubmit)="guardar(materialForm)">
+                <mat-form-field appearance="outline" class="full-col">
+                  <mat-label>Nombre *</mat-label>
+                  <input matInput [(ngModel)]="form.nombre" name="nombre" required minlength="3" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]+$">
+                  <mat-error *ngIf="materialForm.submitted || materialForm.form.get('nombre')?.touched">
+                    <span *ngIf="materialForm.form.get('nombre')?.hasError('required')">El nombre es obligatorio.</span>
+                    <span *ngIf="materialForm.form.get('nombre')?.hasError('pattern')">Caracteres inválidos en el nombre.</span>
+                  </mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-col">
+                  <mat-label>Descripción</mat-label>
+                  <textarea matInput [(ngModel)]="form.descripcion" name="descripcion" rows="2"></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Categoría</mat-label>
+                  <mat-select [(ngModel)]="form.categoria" name="categoria">
+                    <mat-option *ngFor="let c of categorias" [value]="c">{{ c }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Unidad</mat-label>
+                  <mat-select [(ngModel)]="form.unidad" name="unidad">
+                    <mat-option *ngFor="let u of unidades" [value]="u">{{ u }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Cantidad Disponible</mat-label>
+                  <input matInput type="number" [(ngModel)]="form.cantidadDisponible" name="cantidadDisponible" min="0">
+                  <mat-error *ngIf="materialForm.form.get('cantidadDisponible')?.hasError('min')">La cantidad no puede ser negativa.</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Costo Unitario ($)</mat-label>
+                  <input matInput type="number" [(ngModel)]="form.costoUnitario" name="costoUnitario" min="0" step="0.01">
+                  <mat-error *ngIf="materialForm.form.get('costoUnitario')?.hasError('min')">El costo no puede ser negativo.</mat-error>
+                </mat-form-field>
+              </form>
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button (click)="cancelar()">Cancelar</button>
+              <button mat-raised-button color="primary" type="submit" [disabled]="materialForm.invalid"><mat-icon>save</mat-icon> {{ isNew ? 'Guardar' : 'Actualizar' }}</button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab Historial de uso -->
+    <mat-tab label="Historial de Uso">
+      <div class="tab-content">
+        <mat-card class="table-card" style="margin-top:16px">
+          <mat-card-content>
+            <div class="table-wrap">
+              <table mat-table [dataSource]="usoMateriales" class="data-table">
+                <ng-container matColumnDef="material">
+                  <th mat-header-cell *matHeaderCellDef>Material</th>
+                  <td mat-cell *matCellDef="let u"><span class="cell-main">{{ u.material?.nombre }}</span></td>
+                </ng-container>
+                <ng-container matColumnDef="taller">
+                  <th mat-header-cell *matHeaderCellDef>Taller</th>
+                  <td mat-cell *matCellDef="let u">{{ u.taller?.nombre }}</td>
+                </ng-container>
+                <ng-container matColumnDef="fecha">
+                  <th mat-header-cell *matHeaderCellDef>Fecha</th>
+                  <td mat-cell *matCellDef="let u">{{ u.fecha | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="cantidad">
+                  <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+                  <td mat-cell *matCellDef="let u">{{ u.cantidadUsada }} {{ u.material?.unidad }}</td>
+                </ng-container>
+                <ng-container matColumnDef="costo_total">
+                  <th mat-header-cell *matHeaderCellDef>Costo Total</th>
+                  <td mat-cell *matCellDef="let u">${{ getCostoTotal(u) | number }}</td>
+                </ng-container>
+                <ng-container matColumnDef="acciones">
+                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                  <td mat-cell *matCellDef="let u">
+                    <button mat-icon-button color="warn" (click)="eliminarUso(u.id)" matTooltip="Eliminar y restaurar inventario">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumnsU"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumnsU;"></tr>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<div class="overlay" *ngIf="showConfirmDelete">
+  <div class="confirm-dialog">
+    <div class="confirm-icon"><mat-icon>warning</mat-icon></div>
+    <h3>¿Eliminar Material?</h3>
+    <p>Esta acción eliminará el material del inventario permanentemente.</p>
+    <div class="confirm-actions">
+      <button mat-button (click)="showConfirmDelete = false">Cancelar</button>
+      <button mat-raised-button color="warn" (click)="eliminar()"><mat-icon>delete</mat-icon> Eliminar</button>
+    </div>
+  </div>
+</div>

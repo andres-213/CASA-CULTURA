@@ -1,0 +1,48 @@
+.sessions-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  margin-top: 16px;
+  @media(max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.sessions-list-card, .asistencia-card {
+  border-radius: 8px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--card-bg) !important;
+}
+
+.session-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 8px; cursor: pointer;
+  transition: all 0.15s; border: 1px solid transparent;
+  &:hover { background: var(--surface); }
+  &.session-active { background: #e7f0f5; border-color: var(--primary); }
+}
+.session-dot { width: 8px; height: 8px; border-radius: 3px; background: var(--primary); flex-shrink: 0; }
+.session-info { flex: 1; display: flex; flex-direction: column; }
+.session-date { font-weight: 700; font-size: 0.82rem; color: var(--primary); }
+.session-tema { font-size: 0.88rem; color: var(--text-primary); margin-top: 2px; }
+
+.attendance-list { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+.attendance-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface);
+  flex-wrap: wrap;
+}
+.att-participant { display: flex; align-items: center; gap: 12px; }
+.att-info { display: flex; flex-direction: column; }
+.att-name { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+.att-barrio { font-size: 0.78rem; color: var(--text-muted); }
+.att-present { background: #e8f5ee !important; color: var(--success) !important; }
+.att-absent { background: #fbe9e7 !important; color: var(--danger) !important; }
+.att-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.obs-field { width: 200px; ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; } }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 32px; color: var(--text-muted);
+  mat-icon { font-size: 48px; width: 48px; height: 48px; opacity: 0.3; }
+  p { font-size: 0.9rem; text-align: center; }
+}
