@@ -267,7 +267,7 @@ GROUP BY d.id, d.nombre;
 -- ============================================================
 
 INSERT INTO usuarios (username, password, nombre, rol) VALUES
-('admin',    'admin123',  'Administrador Sistema', 'admin'),
+('admin',    'admin123@',  'Administrador Sistema', 'admin'),
 ('operador', 'op123',     'Operador General',      'operador');
 
 INSERT INTO disciplinas (nombre, descripcion, color, icono) VALUES
