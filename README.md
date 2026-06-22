@@ -145,7 +145,8 @@ ng build
 
 ## 👤 Autor
 
-**[Tu Nombre]**  
-Materia: Programación Web / Bases de Datos  
-Institución: [Nombre de la Institución]  
-Año: 2024
+**[Miguel Silgado]**  
+Materia: Programación Web 
+Institución: [SENA]  
+Año: 2026
+
