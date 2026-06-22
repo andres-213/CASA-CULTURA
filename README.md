@@ -118,7 +118,7 @@ ng serve
 ```
 
 **Credenciales de acceso demo:**
-- Usuario: `admin` / Contraseña: `admin12345`
+- Usuario: `admin` / Contraseña: `admin123@`
 - Usuario: `operador` / Contraseña: `op123`
 
 ---
