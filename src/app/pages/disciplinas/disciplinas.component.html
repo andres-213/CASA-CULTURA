@@ -25,7 +25,13 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="form-card" *ngIf="isNew || selected">
+  </div>
+</div>
+
+<!-- Modal Formulario -->
+<div class="overlay" *ngIf="showForm">
+  <div class="form-modal" (click)="$event.stopPropagation()">
+    <mat-card class="form-card">
       <mat-card-header>
         <mat-card-title>{{ isNew ? 'Nueva Disciplina' : 'Editar Disciplina' }}</mat-card-title>
       </mat-card-header>
@@ -74,7 +80,7 @@
       </mat-card-content>
       <mat-card-actions align="end">
         <button mat-button (click)="cancelar()">Cancelar</button>
-        <button mat-raised-button color="primary" (click)="guardar()" [disabled]="disciplinaForm.invalid">
+        <button mat-raised-button color="primary" (click)="guardar(disciplinaForm)" [disabled]="disciplinaForm.invalid">
           <mat-icon>save</mat-icon> {{ isNew ? 'Guardar' : 'Actualizar' }}
         </button>
       </mat-card-actions>

@@ -111,7 +111,13 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="form-card" *ngIf="isNew || selected">
+  </div>
+</div>
+
+<!-- Modal Formulario -->
+<div class="overlay" *ngIf="showForm">
+  <div class="form-modal" (click)="$event.stopPropagation()">
+    <mat-card class="form-card">
       <mat-card-header>
         <mat-card-title>{{ isNew ? 'Nuevo Usuario' : 'Editar Usuario' }}</mat-card-title>
       </mat-card-header>
@@ -222,7 +228,7 @@
 
         <button mat-raised-button
                 color="primary"
-                (click)="guardar()"
+                (click)="guardar(usuarioForm)"
                 [disabled]="usuarioForm.invalid">
           <mat-icon>save</mat-icon>
           {{ isNew ? 'Crear Usuario' : 'Actualizar' }}

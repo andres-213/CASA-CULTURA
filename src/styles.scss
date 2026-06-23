@@ -352,18 +352,29 @@ button.mat-stroked-button {
 
 .alert-success,
 .alert-error {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
-  border-radius: 8px;
-  margin-bottom: 18px;
+  padding: 14px 22px;
+  border-radius: 10px;
   font-size: .9rem;
   font-weight: 600;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, .18);
+  animation: toastIn .25s ease;
+  max-width: 440px;
 }
 
 .alert-success { background: #ecf8f1; color: var(--success); border: 1px solid #c8e8d2; }
 .alert-error { background: #fce8ea; color: var(--danger); border: 1px solid #f3c8cc; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 
 .filter-card { margin-bottom: 18px; }
 .filter-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -384,6 +395,8 @@ button.mat-stroked-button {
   .form-grid,
   .form-grid-2 { grid-template-columns: 1fr; }
 }
+.mat-mdc-form-field-required-marker { display: none !important; }
+
 .confirm-dialog {
   background: var(--card-bg);
   border-radius: 8px;
@@ -394,6 +407,35 @@ button.mat-stroked-button {
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
   animation: scaleIn .18s ease;
+}
+
+.form-modal {
+  background: var(--card-bg);
+  border-radius: 12px;
+  max-width: 540px;
+  width: min(540px, 94%);
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: scaleIn .18s ease;
+}
+
+.form-modal .mat-mdc-card {
+  box-shadow: none !important;
+  border: none !important;
+  margin: 0;
+}
+
+.form-modal .mat-mdc-card-header {
+  padding: 22px 24px 8px !important;
+}
+
+.form-modal .mat-mdc-card-content {
+  padding: 14px 24px 18px !important;
+}
+
+.form-modal .mat-mdc-card-actions {
+  padding: 8px 24px 20px !important;
 }
 .confirm-dialog .confirm-icon {
   width: 56px;

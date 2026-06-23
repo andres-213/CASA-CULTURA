@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DataService } from '../../services/data.service';
 import { Participante } from '../../models/models';
 
@@ -12,6 +14,7 @@ export class ParticipantesComponent implements OnInit {
   filtered: Participante[] = [];
   selected: Participante | null = null;
   isNew = false;
+  showForm = false;
   searchTerm = '';
   showConfirmDelete = false;
   toDeleteId: number | null = null;
@@ -48,6 +51,7 @@ export class ParticipantesComponent implements OnInit {
   nuevo(): void {
     this.selected = null;
     this.isNew = true;
+    this.showForm = true;
     this.form = this.emptyForm();
     this.clearMessages();
   }
@@ -55,6 +59,7 @@ export class ParticipantesComponent implements OnInit {
   select(p: Participante): void {
     this.selected = p;
     this.isNew = false;
+    this.showForm = true;
     this.form = { ...p };
     this.clearMessages();
   }
@@ -70,34 +75,32 @@ export class ParticipantesComponent implements OnInit {
     }
   }
 
-  guardar(): void {
-    console.log('[Participantes] guardar() invoked', { isNew: this.isNew, form: this.form });
-    if (!this.form.nombre || !this.form.apellido || !this.form.cedula) {
-      this.errorMsg = 'Nombre, apellido y cédula son obligatorios.';
+  guardar(participanteForm: NgForm): void {
+    if (participanteForm.invalid) {
+      participanteForm.form.markAllAsTouched();
+      this.errorMsg = 'Corrija los errores del formulario antes de guardar.';
       return;
     }
     if (this.isNew) {
       this.data.createParticipante(this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Participante registrado exitosamente.';
           this.load();
-          this.cancelar();
-          this.isNew = false;
         },
-        error: () => {
-          this.errorMsg = 'Error al registrar el participante.';
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al registrar el participante.';
         }
       });
     } else if (this.selected) {
       this.data.updateParticipante(this.selected.id, this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Participante actualizado exitosamente.';
           this.load();
-          this.cancelar();
-          this.isNew = false;
         },
-        error: () => {
-          this.errorMsg = 'Error al actualizar el participante.';
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al actualizar el participante.';
         }
       });
     }
@@ -113,8 +116,8 @@ export class ParticipantesComponent implements OnInit {
           if (this.selected?.id === this.toDeleteId) this.selected = null;
           this.load();
         },
-        error: () => {
-          this.errorMsg = 'Error al eliminar el participante.';
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al eliminar el participante.';
         }
       });
     }
@@ -122,6 +125,6 @@ export class ParticipantesComponent implements OnInit {
     this.toDeleteId = null;
   }
 
-  cancelar(): void { this.selected = null; this.isNew = false; this.form = this.emptyForm(); this.clearMessages(); }
+  cancelar(): void { this.selected = null; this.isNew = false; this.showForm = false; this.form = this.emptyForm(); this.clearMessages(); }
   clearMessages(): void { this.successMsg = ''; this.errorMsg = ''; }
 }

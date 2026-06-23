@@ -138,14 +138,37 @@ export class DataService {
       map(() => true)
     );
   }
+  private normalizeInstructor(i: any): Instructor {
+    return {
+      id: i.id,
+      nombre: i.nombre,
+      apellido: i.apellido,
+      email: i.email,
+      telefono: i.telefono,
+      disciplinaId: i.disciplinaId ?? i.disciplina_id,
+      tipo: i.tipo,
+      activo: Boolean(i.activo),
+      fechaIngreso: i.fechaIngreso ?? i.fecha_ingreso ?? '',
+      disciplina: i.disciplina || (i.disciplina_nombre ? {
+        id: i.disciplinaId ?? i.disciplina_id,
+        nombre: i.disciplina_nombre,
+        descripcion: i.disciplina_descripcion ?? '',
+        color: i.disciplina_color,
+        icono: i.disciplina_icono ?? 'person'
+      } : undefined)
+    };
+  }
+
   // INSTRUCTORES
   getInstructores(): Observable<Instructor[]> {
-    return this.http.get<Instructor[]>(`${this.apiUrl}/instructores`);
+    return this.http.get<any[]>(`${this.apiUrl}/instructores`).pipe(
+      map(instructores => instructores.map(i => this.normalizeInstructor(i)))
+    );
   }
 
   getInstructorById(id: number): Observable<Instructor | undefined> {
-    return this.http.get<Instructor>(`${this.apiUrl}/instructores/${id}`).pipe(
-      map(inst => inst || undefined)
+    return this.http.get<any>(`${this.apiUrl}/instructores/${id}`).pipe(
+      map(inst => inst ? this.normalizeInstructor(inst) : undefined)
     );
   }
 
@@ -204,14 +227,31 @@ export class DataService {
   deleteTaller(id: number): Observable<boolean> {
     return this.http.delete(`${this.apiUrl}/talleres/${id}`).pipe(map(() => true));
   }
+  private normalizeParticipante(p: any): Participante {
+    return {
+      id: p.id,
+      nombre: p.nombre,
+      apellido: p.apellido,
+      cedula: p.cedula,
+      email: p.email,
+      telefono: p.telefono,
+      fechaNacimiento: p.fechaNacimiento ?? p.fecha_nacimiento ?? '',
+      edad: p.edad ?? 0,
+      barrio: p.barrio ?? '',
+      activo: Boolean(p.activo)
+    };
+  }
+
   // PARTICIPANTES
   getParticipantes(): Observable<Participante[]> {
-    return this.http.get<Participante[]>(`${this.apiUrl}/participantes`);
+    return this.http.get<any[]>(`${this.apiUrl}/participantes`).pipe(
+      map(participantes => participantes.map(p => this.normalizeParticipante(p)))
+    );
   }
 
   getParticipanteById(id: number): Observable<Participante | undefined> {
-    return this.http.get<Participante>(`${this.apiUrl}/participantes/${id}`).pipe(
-      map(p => p || undefined)
+    return this.http.get<any>(`${this.apiUrl}/participantes/${id}`).pipe(
+      map(p => p ? this.normalizeParticipante(p) : undefined)
     );
   }
 
@@ -297,13 +337,27 @@ export class DataService {
     }
     return this.createAsistencia(data);
   }
+  private normalizeMaterial(m: any): Material {
+    return {
+      id: m.id,
+      nombre: m.nombre,
+      descripcion: m.descripcion ?? '',
+      cantidadDisponible: m.cantidadDisponible ?? m.cantidad_disponible ?? 0,
+      costoUnitario: m.costoUnitario ?? m.costo_unitario ?? 0,
+      unidad: m.unidad ?? 'unidad',
+      categoria: m.categoria ?? ''
+    };
+  }
+
   // MATERIALES
   getMateriales(): Observable<Material[]> {
-    return this.http.get<Material[]>(`${this.apiUrl}/materiales`);
+    return this.http.get<any[]>(`${this.apiUrl}/materiales`).pipe(
+      map(materiales => materiales.map(m => this.normalizeMaterial(m)))
+    );
   }
   getMaterialById(id: number): Observable<Material | undefined> {
-    return this.http.get<Material>(`${this.apiUrl}/materiales/${id}`).pipe(
-      map(m => m || undefined)
+    return this.http.get<any>(`${this.apiUrl}/materiales/${id}`).pipe(
+      map(m => m ? this.normalizeMaterial(m) : undefined)
     );
   }
   createMaterial(data: Omit<Material, 'id'>): Observable<Material> {

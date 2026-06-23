@@ -68,7 +68,7 @@ const parseFloatValue = (value) => {
   return Number.isFinite(number) ? number : NaN;
 };
 
-const hashPassword = async (password) => bcrypt.hash(password, 10);
+const hashPassword = async (password) => bcrypt.hash(password, 6);
 const comparePassword = async (plain, hash) => bcrypt.compare(plain, hash);
 const isPasswordHashed = (value = '') => typeof value === 'string' && /^\$2[aby]\$/.test(value);
 const sanitizeUser = ({ password, ...user }) => user;

@@ -35,42 +35,46 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- Nueva sesión form -->
-  <mat-card class="form-inline-card" *ngIf="showNuevaSesion">
-    <mat-card-header>
-      <mat-card-title>Nueva Sesión de Taller</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form #nuevaSesionNgForm="ngForm" class="form-grid form-grid-2" novalidate>
-        <mat-form-field appearance="outline">
-          <mat-label>Fecha *</mat-label>
-          <input matInput type="date" [(ngModel)]="nuevaSesionForm.fecha" name="fecha" required>
-          <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('fecha')?.touched">
-            La fecha es obligatoria.
-          </mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Tema de la Sesión *</mat-label>
-          <input matInput [(ngModel)]="nuevaSesionForm.tema" name="tema" required minlength="3" maxlength="120" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]+$" placeholder="Ej: Introducción a los acordes">
-          <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('tema')?.touched">
-            <span *ngIf="nuevaSesionNgForm.form.get('tema')?.hasError('required')">El tema es obligatorio.</span>
-            <span *ngIf="nuevaSesionNgForm.form.get('tema')?.hasError('pattern')">Caracteres inválidos en el tema.</span>
-          </mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-col">
-          <mat-label>Observaciones</mat-label>
-          <textarea matInput [(ngModel)]="nuevaSesionForm.observaciones" name="observaciones" rows="2" maxlength="150" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]*$"></textarea>
-          <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('observaciones')?.touched">
-            <span *ngIf="nuevaSesionNgForm.form.get('observaciones')?.hasError('pattern')">Caracteres inválidos en las observaciones.</span>
-          </mat-error>
-        </mat-form-field>
-      </form>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button (click)="showNuevaSesion = false">Cancelar</button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="nuevaSesionNgForm.invalid" (click)="crearSesion(nuevaSesionNgForm)"><mat-icon>save</mat-icon> Crear Sesión</button>
-    </mat-card-actions>
-  </mat-card>
+  <!-- Modal nueva sesión -->
+  <div class="overlay" *ngIf="showNuevaSesion">
+    <div class="form-modal" (click)="$event.stopPropagation()">
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>Nueva Sesión de Taller</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form #nuevaSesionNgForm="ngForm" class="form-grid" novalidate (ngSubmit)="crearSesion(nuevaSesionNgForm)">
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha *</mat-label>
+              <input matInput type="date" [(ngModel)]="nuevaSesionForm.fecha" name="fecha" required>
+              <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('fecha')?.touched">
+                La fecha es obligatoria.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Tema de la Sesión *</mat-label>
+              <input matInput [(ngModel)]="nuevaSesionForm.tema" name="tema" required minlength="3" maxlength="120" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]+$" placeholder="Ej: Introducción a los acordes">
+              <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('tema')?.touched">
+                <span *ngIf="nuevaSesionNgForm.form.get('tema')?.hasError('required')">El tema es obligatorio.</span>
+                <span *ngIf="nuevaSesionNgForm.form.get('tema')?.hasError('pattern')">Caracteres inválidos en el tema.</span>
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-col">
+              <mat-label>Observaciones</mat-label>
+              <textarea matInput [(ngModel)]="nuevaSesionForm.observaciones" name="observaciones" rows="2" maxlength="150" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\-.,;:()]*$"></textarea>
+              <mat-error *ngIf="nuevaSesionNgForm.submitted || nuevaSesionNgForm.form.get('observaciones')?.touched">
+                <span *ngIf="nuevaSesionNgForm.form.get('observaciones')?.hasError('pattern')">Caracteres inválidos en las observaciones.</span>
+              </mat-error>
+            </mat-form-field>
+          </form>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button (click)="showNuevaSesion = false">Cancelar</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="nuevaSesionNgForm.invalid"><mat-icon>save</mat-icon> Crear Sesión</button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
 
   <!-- Lista de sesiones -->
   <div class="sessions-layout" *ngIf="selectedTallerId">

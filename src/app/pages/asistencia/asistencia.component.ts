@@ -26,7 +26,7 @@ export class AsistenciaComponent implements OnInit {
 
   ngOnInit(): void {
     this.data.getTalleres().subscribe(talleres => {
-      setTimeout(() => { this.talleres = talleres.filter((t: Taller) => t.activo); });
+      this.talleres = talleres.filter((t: Taller) => t.activo);
     });
   }
 

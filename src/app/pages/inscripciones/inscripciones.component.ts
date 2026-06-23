@@ -29,17 +29,18 @@ export class InscripcionesComponent implements OnInit {
 
   ngOnInit(): void {
     this.data.getParticipantes().subscribe(participantes => {
-      setTimeout(() => { this.participantes = participantes.filter((p: Participante) => p.activo); });
+      this.participantes = participantes.filter((p: Participante) => p.activo);
     });
     this.data.getTalleres().subscribe(talleres => {
-      setTimeout(() => { this.talleres = talleres.filter((t: Taller) => t.activo); });
+      this.talleres = talleres.filter((t: Taller) => t.activo);
     });
     this.load();
   }
 
   load(): void {
     this.data.getInscripciones().subscribe(inscripciones => {
-      setTimeout(() => { this.inscripciones = inscripciones; this.applyFilter(); });
+      this.inscripciones = inscripciones;
+      this.applyFilter();
     });
   }
 

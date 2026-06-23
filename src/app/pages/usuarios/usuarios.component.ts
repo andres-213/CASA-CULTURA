@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -19,6 +20,7 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<Usuario>([]);
   selected: Usuario | null = null;
   isNew = false;
+  showForm = false;
   showConfirmDelete = false;
   toDeleteId: number | null = null;
   successMsg = '';
@@ -94,6 +96,7 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   nuevo(): void {
     this.selected = null;
     this.isNew = true;
+    this.showForm = true;
     this.form = this.emptyForm();
     this.clearMessages();
   }
@@ -101,6 +104,7 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   select(u: Usuario): void {
     this.selected = u;
     this.isNew = false;
+    this.showForm = true;
     this.form = { ...u, password: '' };
     this.clearMessages();
   }
@@ -118,8 +122,12 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
     this.dataSource.paginator?.firstPage();
   }
 
-  guardar(): void {
-    console.log('[Usuarios] guardar() invoked', { isNew: this.isNew, form: this.form });
+  guardar(usuarioForm: NgForm): void {
+    if (usuarioForm.invalid) {
+      usuarioForm.form.markAllAsTouched();
+      this.errorMsg = 'Corrija los errores del formulario antes de guardar.';
+      return;
+    }
     this.form.username = (this.form.username || '').trim();
     this.form.nombre = (this.form.nombre || '').trim();
 
@@ -235,6 +243,7 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   resetFormState(): void {
     this.selected = null;
     this.isNew = false;
+    this.showForm = false;
     this.form = this.emptyForm();
   }
 

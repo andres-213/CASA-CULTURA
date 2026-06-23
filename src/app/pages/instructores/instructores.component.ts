@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DataService } from '../../services/data.service';
 import { Instructor, Disciplina } from '../../models/models';
 
@@ -13,6 +15,7 @@ export class InstructoresComponent implements OnInit {
   disciplinas: Disciplina[] = [];
   selected: Instructor | null = null;
   isNew = false;
+  showForm = false;
   searchTerm = '';
   showConfirmDelete = false;
   toDeleteId: number | null = null;
@@ -49,34 +52,35 @@ export class InstructoresComponent implements OnInit {
     );
   }
 
-  nuevo(): void { this.selected = null; this.isNew = true; this.form = this.emptyForm(); this.clearMessages(); }
-  select(i: Instructor): void { this.selected = i; this.isNew = false; this.form = { ...i }; this.clearMessages(); }
+  nuevo(): void { this.selected = null; this.isNew = true; this.showForm = true; this.form = this.emptyForm(); this.clearMessages(); }
+  select(i: Instructor): void { this.selected = i; this.isNew = false; this.showForm = true; this.form = { ...i }; this.clearMessages(); }
 
-  guardar(): void {
-    console.log('[Instructores] guardar() invoked', { isNew: this.isNew, form: this.form });
-    if (!this.form.nombre || !this.form.apellido || !this.form.disciplinaId) {
-      this.errorMsg = 'Nombre, apellido y disciplina son obligatorios.'; return;
+  guardar(instructorForm: NgForm): void {
+    if (instructorForm.invalid) {
+      instructorForm.form.markAllAsTouched();
+      this.errorMsg = 'Corrija los errores del formulario antes de guardar.';
+      return;
     }
     if (this.isNew) {
       this.data.createInstructor(this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Instructor registrado exitosamente.';
           this.load();
-          this.cancelar();
         },
-        error: (err) => {
-          this.errorMsg = 'Error al crear instructor: ' + err.message;
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al crear instructor.';
         }
       });
     } else if (this.selected) {
       this.data.updateInstructor(this.selected.id, this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Instructor actualizado.';
           this.load();
-          this.cancelar();
         },
-        error: (err) => {
-          this.errorMsg = 'Error al actualizar instructor: ' + err.message;
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al actualizar instructor.';
         }
       });
     }
@@ -90,13 +94,13 @@ export class InstructoresComponent implements OnInit {
           this.successMsg = 'Instructor eliminado.';
           this.load();
         },
-        error: (err) => {
-          this.errorMsg = 'Error al eliminar instructor: ' + err.message;
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al eliminar instructor.';
         }
       });
     }
     this.showConfirmDelete = false; this.toDeleteId = null;
   }
-  cancelar(): void { this.selected = null; this.isNew = false; this.form = this.emptyForm(); this.clearMessages(); }
+  cancelar(): void { this.selected = null; this.isNew = false; this.showForm = false; this.form = this.emptyForm(); this.clearMessages(); }
   clearMessages(): void { this.successMsg = ''; this.errorMsg = ''; }
 }

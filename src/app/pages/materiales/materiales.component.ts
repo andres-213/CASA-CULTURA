@@ -14,6 +14,7 @@ export class MaterialesComponent implements OnInit {
   talleres: Taller[] = [];
   selectedMat: Material | null = null;
   isNew = false;
+  showForm = false;
   showUsoForm = false;
   showConfirmDelete = false;
   toDeleteId: number | null = null;
@@ -35,10 +36,10 @@ export class MaterialesComponent implements OnInit {
 
   load(): void {
     this.data.getMateriales().subscribe(materiales => {
-      setTimeout(() => { this.materiales = materiales; });
+      this.materiales = materiales;
     });
     this.data.getUsoMateriales().subscribe(usoMateriales => {
-      setTimeout(() => { this.usoMateriales = usoMateriales; });
+      this.usoMateriales = usoMateriales;
     });
   }
 
@@ -46,21 +47,21 @@ export class MaterialesComponent implements OnInit {
     return { nombre: '', descripcion: '', cantidadDisponible: 10, costoUnitario: 0, unidad: 'unidad', categoria: '' };
   }
 
-  nuevo(): void { this.selectedMat = null; this.isNew = true; this.form = this.emptyForm(); this.clearMessages(); }
-  select(m: Material): void { this.selectedMat = m; this.isNew = false; this.form = { ...m }; this.clearMessages(); }
+  nuevo(): void { this.selectedMat = null; this.isNew = true; this.showForm = true; this.form = this.emptyForm(); this.clearMessages(); }
+  select(m: Material): void { this.selectedMat = m; this.isNew = false; this.showForm = true; this.form = { ...m }; this.clearMessages(); }
 
   guardar(materialForm: NgForm): void {
     if (materialForm.invalid) {
       materialForm.form.markAllAsTouched();
-      this.errorMsg = 'Complete los campos obligatorios para guardar el material.';
+      this.errorMsg = 'Corrija los errores del formulario antes de guardar.';
       return;
     }
     if (this.isNew) {
       this.data.createMaterial(this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Material registrado.';
           this.load();
-          this.cancelar();
         },
         error: () => {
           this.errorMsg = 'Error al registrar el material.';
@@ -69,9 +70,9 @@ export class MaterialesComponent implements OnInit {
     } else if (this.selectedMat) {
       this.data.updateMaterial(this.selectedMat.id, this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Material actualizado.';
           this.load();
-          this.cancelar();
         },
         error: () => {
           this.errorMsg = 'Error al actualizar el material.';
@@ -128,7 +129,7 @@ export class MaterialesComponent implements OnInit {
     });
   }
 
-  cancelar(): void { this.selectedMat = null; this.isNew = false; this.form = this.emptyForm(); this.clearMessages(); }
+  cancelar(): void { this.selectedMat = null; this.isNew = false; this.showForm = false; this.form = this.emptyForm(); this.clearMessages(); }
   clearMessages(): void { this.successMsg = ''; this.errorMsg = ''; }
   getStockClass(m: Material): string {
     if (m.cantidadDisponible === 0) return 'stock-agotado';

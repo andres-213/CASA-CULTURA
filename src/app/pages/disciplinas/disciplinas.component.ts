@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DataService } from '../../services/data.service';
 import { Disciplina } from '../../models/models';
 
@@ -7,6 +9,7 @@ export class DisciplinasComponent implements OnInit {
   disciplinas: Disciplina[] = [];
   selected: Disciplina | null = null;
   isNew = false;
+  showForm = false;
   showConfirmDelete = false;
   toDeleteId: number | null = null;
   successMsg = ''; errorMsg = '';
@@ -23,31 +26,34 @@ export class DisciplinasComponent implements OnInit {
     });
   }
   emptyForm() { return { nombre: '', descripcion: '', color: '#1f5f8b', icono: 'palette' }; }
-  nuevo(): void { this.selected = null; this.isNew = true; this.form = this.emptyForm(); this.clearMessages(); }
-  select(d: Disciplina): void { this.selected = d; this.isNew = false; this.form = { ...d }; this.clearMessages(); }
-  guardar(): void {
-    console.log('[Disciplinas] guardar() invoked', { isNew: this.isNew, form: this.form });
-    if (!this.form.nombre) { this.errorMsg = 'El nombre es obligatorio.'; return; }
+  nuevo(): void { this.selected = null; this.isNew = true; this.showForm = true; this.form = this.emptyForm(); this.clearMessages(); }
+  select(d: Disciplina): void { this.selected = d; this.isNew = false; this.showForm = true; this.form = { ...d }; this.clearMessages(); }
+  guardar(disciplinaForm: NgForm): void {
+    if (disciplinaForm.invalid) {
+      disciplinaForm.form.markAllAsTouched();
+      this.errorMsg = 'Corrija los errores del formulario antes de guardar.';
+      return;
+    }
     if (this.isNew) {
       this.data.createDisciplina(this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Disciplina creada.';
           this.load();
-          this.cancelar();
         },
-        error: (err) => {
-          this.errorMsg = 'Error al crear la disciplina.' + (err?.message ? ' ' + err.message : '');
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al crear la disciplina.';
         }
       });
     } else if (this.selected) {
       this.data.updateDisciplina(this.selected.id, this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Disciplina actualizada.';
           this.load();
-          this.cancelar();
         },
-        error: (err) => {
-          this.errorMsg = 'Error al actualizar la disciplina.' + (err?.message ? ' ' + err.message : '');
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al actualizar la disciplina.';
         }
       });
     }
@@ -60,13 +66,13 @@ export class DisciplinasComponent implements OnInit {
           this.successMsg = 'Disciplina eliminada.';
           this.load();
         },
-        error: (err) => {
-          this.errorMsg = 'Error al eliminar la disciplina.' + (err?.message ? ' ' + err.message : '');
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al eliminar la disciplina.';
         }
       });
     }
     this.showConfirmDelete = false; this.toDeleteId = null;
   }
-  cancelar(): void { this.selected = null; this.isNew = false; this.form = this.emptyForm(); this.clearMessages(); }
+  cancelar(): void { this.selected = null; this.isNew = false; this.showForm = false; this.form = this.emptyForm(); this.clearMessages(); }
   clearMessages(): void { this.successMsg = ''; this.errorMsg = ''; }
 }

@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DataService } from '../../services/data.service';
 import { Taller, Disciplina, Instructor, Salon } from '../../models/models';
 
@@ -11,6 +13,7 @@ export class TalleresComponent implements OnInit {
   salones: Salon[] = [];
   selected: Taller | null = null;
   isNew = false;
+  showForm = false;
   showConfirmDelete = false;
   toDeleteId: number | null = null;
   successMsg = ''; errorMsg = '';
@@ -20,7 +23,12 @@ export class TalleresComponent implements OnInit {
   filterDisponible: boolean | null = null;
   displayedColumns = ['nombre', 'disciplina', 'instructor', 'salon', 'horario', 'cupo', 'acciones'];
   dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  trimestres = ['2024-Q1','2024-Q2','2024-Q3','2024-Q4'];
+  trimestres = [
+    { value: 'I', label: 'Trimestre I' },
+    { value: 'II', label: 'Trimestre II' },
+    { value: 'III', label: 'Trimestre III' },
+    { value: 'IV', label: 'Trimestre IV' },
+  ];
 
   constructor(private data: DataService) {}
 
@@ -35,13 +43,14 @@ export class TalleresComponent implements OnInit {
 
   load(): void {
     this.data.getTalleres().subscribe(talleres => {
-      setTimeout(() => { this.talleres = talleres; this.applyFilter(); });
+      this.talleres = talleres;
+      this.applyFilter();
     });
   }
 
   emptyForm() {
     return { nombre: '', disciplinaId: null as any, instructorId: null as any, salonId: null as any,
-      horario: '', diaSemana: '', horaInicio: '', horaFin: '', cupoMaximo: 20, cupoActual: 0, trimestre: '2024-Q1', activo: true };
+      horario: '', diaSemana: '', horaInicio: '', horaFin: '', cupoMaximo: 20, cupoActual: 0, trimestre: 'I', activo: true };
   }
 
   applyFilter(): void {
@@ -59,38 +68,36 @@ export class TalleresComponent implements OnInit {
     }
   }
 
-  nuevo(): void { this.selected = null; this.isNew = true; this.form = this.emptyForm(); this.clearMessages(); }
-  select(t: Taller): void { this.selected = t; this.isNew = false; this.form = { ...t }; this.clearMessages(); }
+  nuevo(): void { this.selected = null; this.isNew = true; this.showForm = true; this.form = this.emptyForm(); this.clearMessages(); }
+  select(t: Taller): void { this.selected = t; this.isNew = false; this.showForm = true; this.form = { ...t }; this.clearMessages(); }
 
-  guardar(): void {
-    console.log('[Talleres] guardar() invoked', { isNew: this.isNew, form: this.form });
-    if (!this.form.nombre || !this.form.disciplinaId || !this.form.instructorId || !this.form.salonId) {
-      this.errorMsg = 'Nombre, disciplina, instructor y salón son obligatorios.'; return;
-    }
-    if (!this.form.diaSemana || !this.form.horaInicio || !this.form.horaFin) {
-      this.errorMsg = 'Debe especificar el horario completo.'; return;
-    }
+  guardar(tallerForm: NgForm): void {
     this.buildHorario();
+    if (tallerForm.invalid) {
+      tallerForm.form.markAllAsTouched();
+      this.errorMsg = 'Corrija los errores del formulario antes de guardar.';
+      return;
+    }
     if (this.isNew) {
       this.data.createTaller(this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Taller creado exitosamente.';
           this.load();
-          this.cancelar();
         },
-        error: () => {
-          this.errorMsg = 'Error al crear el taller.';
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al crear el taller.';
         }
       });
     } else if (this.selected) {
       this.data.updateTaller(this.selected.id, this.form).subscribe({
         next: () => {
+          this.cancelar();
           this.successMsg = 'Taller actualizado.';
           this.load();
-          this.cancelar();
         },
-        error: () => {
-          this.errorMsg = 'Error al actualizar el taller.';
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al actualizar el taller.';
         }
       });
     }
@@ -104,14 +111,14 @@ export class TalleresComponent implements OnInit {
           this.successMsg = 'Taller eliminado.';
           this.load();
         },
-        error: () => {
-          this.errorMsg = 'Error al eliminar el taller.';
+        error: (err: HttpErrorResponse) => {
+          this.errorMsg = err.error?.error || 'Error al eliminar el taller.';
         }
       });
     }
     this.showConfirmDelete = false; this.toDeleteId = null;
   }
-  cancelar(): void { this.selected = null; this.isNew = false; this.form = this.emptyForm(); this.clearMessages(); }
+  cancelar(): void { this.selected = null; this.isNew = false; this.showForm = false; this.form = this.emptyForm(); this.clearMessages(); }
   clearMessages(): void { this.successMsg = ''; this.errorMsg = ''; }
   clearFilters(): void { this.filterDisciplinaId = null; this.filterInstructorId = null; this.filterDisponible = null; this.applyFilter(); }
   getCupoColor(t: Taller): string {

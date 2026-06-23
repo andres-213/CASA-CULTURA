@@ -12,46 +12,50 @@
   <div class="alert-success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
   <div class="alert-error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
 
-  <!-- Formulario nueva inscripción -->
-  <mat-card class="form-inline-card" *ngIf="showForm">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>how_to_reg</mat-icon>
-      <mat-card-title>Inscribir Participante</mat-card-title>
-      <mat-card-subtitle>Seleccione participante y taller. El sistema validará cupo y horario automáticamente.</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <form #inscripcionForm="ngForm" class="form-grid form-grid-2" novalidate (ngSubmit)="guardar(inscripcionForm)">
-        <mat-form-field appearance="outline">
-          <mat-label>Participante *</mat-label>
-          <mat-select [(ngModel)]="form.participanteId" name="participanteId" required>
-            <mat-option *ngFor="let p of participantes" [value]="p.id">
-              {{ p.nombre }} {{ p.apellido }} - {{ p.cedula }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="inscripcionForm.submitted || inscripcionForm.form.get('participanteId')?.touched">
-            Seleccione un participante.
-          </mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Taller *</mat-label>
-          <mat-select [(ngModel)]="form.tallerId" name="tallerId" required>
-            <mat-option *ngFor="let t of talleres" [value]="t.id" [disabled]="t.cupoActual >= t.cupoMaximo">
-              {{ getTallerInfo(t) }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="inscripcionForm.submitted || inscripcionForm.form.get('tallerId')?.touched">
-            Seleccione un taller.
-          </mat-error>
-        </mat-form-field>
-      </form>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button (click)="cancelar()">Cancelar</button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="inscripcionForm.invalid" (click)="guardar(inscripcionForm)">
-        <mat-icon>check</mat-icon> Inscribir
-      </button>
-    </mat-card-actions>
-  </mat-card>
+  <!-- Modal nueva inscripción -->
+  <div class="overlay" *ngIf="showForm">
+    <div class="form-modal" (click)="$event.stopPropagation()">
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>how_to_reg</mat-icon>
+          <mat-card-title>Inscribir Participante</mat-card-title>
+          <mat-card-subtitle>Seleccione participante y taller. El sistema validará cupo y horario automáticamente.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form #inscripcionForm="ngForm" class="form-grid" novalidate>
+            <mat-form-field appearance="outline">
+              <mat-label>Participante *</mat-label>
+              <mat-select [(ngModel)]="form.participanteId" name="participanteId" required>
+                <mat-option *ngFor="let p of participantes" [value]="p.id">
+                  {{ p.nombre }} {{ p.apellido }} - {{ p.cedula }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="inscripcionForm.submitted || inscripcionForm.form.get('participanteId')?.touched">
+                Seleccione un participante.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Taller *</mat-label>
+              <mat-select [(ngModel)]="form.tallerId" name="tallerId" required>
+                <mat-option *ngFor="let t of talleres" [value]="t.id" [disabled]="t.cupoActual >= t.cupoMaximo">
+                  {{ getTallerInfo(t) }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="inscripcionForm.submitted || inscripcionForm.form.get('tallerId')?.touched">
+                Seleccione un taller.
+              </mat-error>
+            </mat-form-field>
+          </form>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button (click)="cancelar()">Cancelar</button>
+          <button mat-raised-button color="primary" (click)="guardar(inscripcionForm)" [disabled]="inscripcionForm.invalid">
+            <mat-icon>check</mat-icon> Inscribir
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
 
   <!-- Filtros -->
   <mat-card class="filter-card">
